@@ -1,0 +1,85 @@
+export type Severity = "critical" | "high" | "medium" | "low";
+export type Priority = "critical" | "high" | "medium" | "low";
+export type ObjectiveType = "revenue" | "operational" | "strategic" | "growth";
+export type ObjectiveStatus = "on_track" | "at_risk" | "behind" | "completed";
+export type ChangeDirection = "up" | "down" | "stable";
+
+export interface Report {
+  id: string;
+  report_date: string;
+  raw_content: string | null;
+  summary: string | null;
+  generated_at: string | null;
+  ingested_at: string;
+  created_at: string;
+}
+
+export interface Risk {
+  id: string;
+  report_id: string;
+  title: string;
+  description: string | null;
+  severity: Severity;
+  category: string | null;
+  mitigation: string | null;
+  created_at: string;
+}
+
+export interface Task {
+  id: string;
+  report_id: string;
+  title: string;
+  description: string | null;
+  priority: Priority;
+  category: string | null;
+  due_date: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface Objective {
+  id: string;
+  report_id: string;
+  title: string;
+  description: string | null;
+  type: ObjectiveType;
+  status: ObjectiveStatus;
+  due_date: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface Metric {
+  id: string;
+  report_id: string;
+  label: string;
+  value: number;
+  unit: string | null;
+  change_direction: ChangeDirection | null;
+  created_at: string;
+}
+
+export interface ReportWithChildren extends Report {
+  risks: Risk[];
+  tasks: Task[];
+  objectives: Objective[];
+  metrics: Metric[];
+}
+
+export interface IngestPayload {
+  report_date: string;
+  raw_content?: string;
+  summary?: string;
+  generated_at?: string;
+  risks: Omit<Risk, "id" | "report_id" | "created_at">[];
+  tasks: Omit<Task, "id" | "report_id" | "completed" | "completed_at" | "created_at">[];
+  objectives: Omit<Objective, "id" | "report_id" | "created_at">[];
+  metrics: Omit<Metric, "id" | "report_id" | "created_at">[];
+}
+
+export interface ComputedMetrics {
+  activeTasksCount: number;
+  criticalRiskCount: number;
+  overdueObjectivesCount: number;
+}

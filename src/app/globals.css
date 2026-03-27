@@ -2,26 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-background: #fafafa;
+    --color-surface: #ffffff;
+    --color-foreground: #1d1d1f;
+    --color-secondary: #6e6e73;
+    --color-tertiary: #86868b;
+    --color-border: #e5e5ea;
+    --color-separator: #c6c6c8;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    overscroll-behavior-y: none;
+  }
+
+  * {
+    -webkit-touch-callout: none;
+  }
+
+  a, button, input, textarea {
+    -webkit-touch-callout: default;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .app-shell {
+    @apply max-w-app mx-auto min-h-screen relative;
+  }
+
+  .page-container {
+    @apply px-5 pt-4 pb-28;
+  }
+
+  .card {
+    @apply bg-surface-elevated rounded-card shadow-card;
+  }
+
+  .card-interactive {
+    @apply card transition-shadow duration-200 active:shadow-card-hover;
+  }
+
+  .section-title {
+    @apply text-title-sm text-foreground;
+  }
+
+  .section-subtitle {
+    @apply text-body-sm text-secondary;
+  }
+
+  .priority-dot {
+    @apply w-2 h-2 rounded-full flex-shrink-0;
+  }
+
+  .status-badge {
+    @apply text-caption font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .separator {
+    @apply h-px bg-border;
+  }
+
+  .skeleton {
+    @apply bg-gray-200 rounded-button animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    background-size: 200% 100%;
+  }
+
+  .bottom-nav {
+    @apply fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app
+      bg-surface-elevated/80 backdrop-blur-xl border-t border-border;
+    padding-bottom: var(--safe-area-bottom);
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-0.5 py-2 px-3
+      text-tertiary transition-colors duration-150;
+  }
+
+  .nav-item-active {
+    @apply text-foreground;
+  }
+
+  .segmented-control {
+    @apply inline-flex bg-gray-100 rounded-lg p-0.5;
+  }
+
+  .segment {
+    @apply px-4 py-1.5 text-body-sm rounded-md transition-all duration-200
+      text-secondary;
+  }
+
+  .segment-active {
+    @apply bg-surface-elevated shadow-card text-foreground font-medium;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .fade-completed {
+    @apply opacity-40 transition-opacity duration-300;
+  }
+
+  .risk-border-critical {
+    @apply border-l-[3px] border-severity-critical;
+  }
+
+  .risk-border-high {
+    @apply border-l-[3px] border-severity-high;
+  }
+
+  .overdue-tint {
+    @apply bg-severity-critical/[0.03];
+  }
+}
+
+input[type="checkbox"] {
+  @apply appearance-none w-[22px] h-[22px] rounded-full border-2 border-border
+    cursor-pointer transition-all duration-200 flex-shrink-0
+    relative;
+}
+
+input[type="checkbox"]:checked {
+  @apply bg-foreground border-foreground;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  @apply absolute inset-0 flex items-center justify-center;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px;
+  animation: check-bounce 200ms ease-out;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
   }
 }
