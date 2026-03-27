@@ -6,6 +6,7 @@ import { ArchiveIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 async function getReports(): Promise<Report[]> {
   const supabase = createServerClient();

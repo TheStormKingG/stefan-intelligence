@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/system/EmptyState";
 import { FileTextIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 async function getLatestReport(): Promise<ReportWithChildren | null> {
   const supabase = createServerClient();

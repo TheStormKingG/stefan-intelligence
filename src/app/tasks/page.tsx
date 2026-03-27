@@ -3,6 +3,7 @@ import { Task } from "@/lib/types";
 import { TasksPageClient } from "./TasksPageClient";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 async function getAllTasks(): Promise<Task[]> {
   const supabase = createServerClient();

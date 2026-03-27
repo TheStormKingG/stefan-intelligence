@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/system/EmptyState";
 import { TargetIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 async function getObjectives(): Promise<Objective[]> {
   const supabase = createServerClient();
