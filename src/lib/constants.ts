@@ -1,4 +1,4 @@
-import { Severity, Priority, ObjectiveType, ObjectiveStatus } from "./types";
+import { Severity, Priority, ObjectiveType, ObjectiveStatus, VerificationStatus } from "./types";
 
 export const SEVERITY_CONFIG: Record<
   Severity,
@@ -93,6 +93,36 @@ export const STATUS_CONFIG: Record<
     label: "Completed",
     color: "text-status-completed",
     dotColor: "bg-status-completed",
+  },
+};
+
+export const VERIFICATION_CONFIG: Record<
+  VerificationStatus,
+  { label: string; color: string; bg: string; icon: "pending" | "check" | "x" | "minus" }
+> = {
+  pending_verification: {
+    label: "Awaiting verification",
+    color: "text-severity-high",
+    bg: "bg-severity-high/8",
+    icon: "pending",
+  },
+  verified: {
+    label: "Verified",
+    color: "text-severity-low",
+    bg: "bg-severity-low/8",
+    icon: "check",
+  },
+  failed_verification: {
+    label: "Not verified",
+    color: "text-severity-critical",
+    bg: "bg-severity-critical/8",
+    icon: "x",
+  },
+  not_applicable: {
+    label: "N/A",
+    color: "text-tertiary",
+    bg: "bg-gray-100",
+    icon: "minus",
   },
 };
 

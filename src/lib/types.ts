@@ -3,6 +3,7 @@ export type Priority = "critical" | "high" | "medium" | "low";
 export type ObjectiveType = "revenue" | "operational" | "strategic" | "growth";
 export type ObjectiveStatus = "on_track" | "at_risk" | "behind" | "completed";
 export type ChangeDirection = "up" | "down" | "stable";
+export type VerificationStatus = "pending_verification" | "verified" | "failed_verification" | "not_applicable";
 
 export interface Report {
   id: string;
@@ -35,6 +36,7 @@ export interface Task {
   due_date: string | null;
   completed: boolean;
   completed_at: string | null;
+  verification_status: VerificationStatus | null;
   created_at: string;
 }
 
@@ -73,7 +75,11 @@ export interface IngestPayload {
   summary?: string;
   generated_at?: string;
   risks: Omit<Risk, "id" | "report_id" | "created_at">[];
-  tasks: Omit<Task, "id" | "report_id" | "completed" | "completed_at" | "created_at">[];
+  tasks: (Omit<Task, "id" | "report_id" | "completed" | "completed_at" | "verification_status" | "created_at"> & {
+    completed?: boolean;
+    completed_at?: string | null;
+    verification_status?: VerificationStatus | null;
+  })[];
   objectives: Omit<Objective, "id" | "report_id" | "created_at">[];
   metrics: Omit<Metric, "id" | "report_id" | "created_at">[];
 }

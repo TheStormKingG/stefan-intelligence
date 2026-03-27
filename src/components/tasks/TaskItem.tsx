@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { Task } from "@/lib/types";
-import { PRIORITY_CONFIG } from "@/lib/constants";
+import { PRIORITY_CONFIG, VERIFICATION_CONFIG } from "@/lib/constants";
 import { formatRelativeDate, isOverdue } from "@/lib/utils";
+import { CheckCircle2Icon, XCircleIcon, ClockIcon, MinusCircleIcon } from "lucide-react";
 
 interface TaskItemProps {
   task: Task;
@@ -12,7 +13,9 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
-  const [completed, setCompleted] = useState(task.completed);
+  const isFailed = task.verification_status === "failed_verification";
+  const [completed, setCompleted] = useState(isFailed ? false : task.completed);
+  const [verificationStatus, setVerificationStatus] = useState(task.verification_status);
   const [, startTransition] = useTransition();
   const config = PRIORITY_CONFIG[task.priority];
   const overdue = !completed && isOverdue(task.due_date);
@@ -20,6 +23,7 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
   async function toggleComplete() {
     const newState = !completed;
     setCompleted(newState);
+    setVerificationStatus(newState ? "pending_verification" : null);
 
     startTransition(async () => {
       try {
@@ -28,17 +32,23 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ completed: newState }),
         });
-        if (!res.ok) setCompleted(!newState);
+        if (!res.ok) {
+          setCompleted(!newState);
+          setVerificationStatus(task.verification_status);
+        }
       } catch {
         setCompleted(!newState);
+        setVerificationStatus(task.verification_status);
       }
     });
   }
 
+  const vConfig = verificationStatus ? VERIFICATION_CONFIG[verificationStatus] : null;
+
   return (
     <div
       className={`flex items-center gap-3 p-4 transition-all duration-300 animate-slide-up ${
-        completed ? "opacity-40" : ""
+        completed && verificationStatus === "verified" ? "opacity-40" : ""
       }`}
       style={{ animationDelay: `${index * 40}ms` }}
     >
@@ -47,35 +57,49 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
       <div className="flex-1 min-w-0">
         <p
           className={`text-body-md font-medium leading-snug ${
-            completed ? "line-through text-tertiary" : "text-foreground"
+            completed && verificationStatus !== "failed_verification"
+              ? "line-through text-tertiary"
+              : "text-foreground"
           }`}
         >
           {task.title}
         </p>
-        {!compact && (
-          <div className="flex items-center gap-2 mt-1">
-            {task.category && (
-              <span className="text-caption text-tertiary">{task.category}</span>
-            )}
-            {task.due_date && (
-              <>
-                {task.category && (
-                  <span className="text-tertiary text-caption">·</span>
-                )}
-                <span
-                  className={`text-caption ${
-                    overdue ? "text-severity-critical font-medium" : "text-tertiary"
-                  }`}
-                >
-                  {formatRelativeDate(task.due_date)}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-        {compact && task.category && (
-          <span className="text-caption text-tertiary">{task.category}</span>
-        )}
+
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          {vConfig && (
+            <span
+              className={`inline-flex items-center gap-1 ${vConfig.bg} ${vConfig.color} status-badge`}
+            >
+              <VerificationIcon status={verificationStatus!} />
+              {vConfig.label}
+            </span>
+          )}
+
+          {!compact && (
+            <>
+              {task.category && (
+                <span className="text-caption text-tertiary">{task.category}</span>
+              )}
+              {task.due_date && (
+                <>
+                  {(task.category || vConfig) && (
+                    <span className="text-tertiary text-caption">·</span>
+                  )}
+                  <span
+                    className={`text-caption ${
+                      overdue ? "text-severity-critical font-medium" : "text-tertiary"
+                    }`}
+                  >
+                    {formatRelativeDate(task.due_date)}
+                  </span>
+                </>
+              )}
+            </>
+          )}
+          {compact && !vConfig && task.category && (
+            <span className="text-caption text-tertiary">{task.category}</span>
+          )}
+        </div>
       </div>
 
       <input
@@ -86,4 +110,19 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
       />
     </div>
   );
+}
+
+function VerificationIcon({ status }: { status: string }) {
+  const size = 11;
+  const strokeWidth = 2;
+  switch (status) {
+    case "verified":
+      return <CheckCircle2Icon size={size} strokeWidth={strokeWidth} />;
+    case "failed_verification":
+      return <XCircleIcon size={size} strokeWidth={strokeWidth} />;
+    case "pending_verification":
+      return <ClockIcon size={size} strokeWidth={strokeWidth} />;
+    default:
+      return <MinusCircleIcon size={size} strokeWidth={strokeWidth} />;
+  }
 }

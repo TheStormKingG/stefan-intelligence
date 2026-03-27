@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   due_date DATE,
   completed BOOLEAN DEFAULT false,
   completed_at TIMESTAMPTZ,
+  verification_status TEXT CHECK (verification_status IN ('pending_verification','verified','failed_verification','not_applicable')) DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -68,6 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_objectives_report ON objectives(report_id);
 CREATE INDEX IF NOT EXISTS idx_objectives_status ON objectives(status);
 CREATE INDEX IF NOT EXISTS idx_metrics_report ON metrics(report_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_verification ON tasks(verification_status);
 
 -- Row Level Security (permissive for single-user app)
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;

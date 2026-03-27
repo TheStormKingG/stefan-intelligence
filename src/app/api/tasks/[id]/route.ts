@@ -31,6 +31,7 @@ export async function PATCH(
     .update({
       completed: body.completed,
       completed_at: body.completed ? new Date().toISOString() : null,
+      verification_status: body.completed ? "pending_verification" : null,
     })
     .eq("id", id)
     .select()

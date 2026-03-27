@@ -96,7 +96,13 @@ export async function POST(request: NextRequest) {
 
     if (payload.tasks.length > 0) {
       const { error } = await supabase.from("tasks").insert(
-        payload.tasks.map((t) => ({ ...t, report_id: reportId }))
+        payload.tasks.map((t) => ({
+          ...t,
+          report_id: reportId,
+          completed: t.completed ?? false,
+          completed_at: t.completed_at ?? null,
+          verification_status: t.verification_status ?? null,
+        }))
       );
       if (error) throw error;
     }
