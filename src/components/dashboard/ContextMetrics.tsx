@@ -1,13 +1,24 @@
 import { Metric } from "@/lib/types";
 import { formatMetricValue } from "@/lib/utils";
-import { TrendingUpIcon, TrendingDownIcon, MinusIcon } from "lucide-react";
+import { TrendingUpIcon, TrendingDownIcon, MinusIcon, BarChart3Icon } from "lucide-react";
+import { EmptyState } from "@/components/system/EmptyState";
 
 interface ContextMetricsProps {
   metrics: Metric[];
 }
 
 export function ContextMetrics({ metrics }: ContextMetricsProps) {
-  if (metrics.length === 0) return null;
+  if (metrics.length === 0) {
+    return (
+      <section className="mb-8">
+        <EmptyState
+          title="No metrics"
+          description="No metrics available for today."
+          icon={<BarChart3Icon size={32} strokeWidth={1.5} />}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="mb-8">

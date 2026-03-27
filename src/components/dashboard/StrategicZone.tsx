@@ -19,7 +19,7 @@ export function StrategicZone({ objectives }: StrategicZoneProps) {
       <SectionContainer title="Strategic Objectives">
         <EmptyState
           title="No objectives"
-          description="Strategic objectives will appear here"
+          description="No strategic objectives currently tracked."
           icon={<TargetIcon size={32} strokeWidth={1.5} />}
         />
       </SectionContainer>

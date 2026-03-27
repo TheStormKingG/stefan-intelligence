@@ -59,8 +59,24 @@ async function getLatestReport(): Promise<ReportWithChildren | null> {
 export default async function DashboardPage() {
   const report = await getLatestReport();
 
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
   const isStale = report && report.report_date !== today;
+
+  let staleHours = 0;
+  if (report?.ingested_at) {
+    staleHours = Math.round(
+      (now.getTime() - new Date(report.ingested_at).getTime()) / (1000 * 60 * 60)
+    );
+  }
+  const isCriticallyStale = staleHours > 36;
+
+  const staleAge =
+    staleHours < 1
+      ? "less than an hour ago"
+      : staleHours < 24
+        ? `${staleHours} hour${staleHours === 1 ? "" : "s"} ago`
+        : `${Math.round(staleHours / 24)} day${Math.round(staleHours / 24) === 1 ? "" : "s"} ago`;
 
   return (
     <div className="page-container">
@@ -76,8 +92,13 @@ export default async function DashboardPage() {
 
       {report && isStale && (
         <Banner
-          message={`Latest report: ${new Date(report.report_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} — new intelligence pending`}
-          variant="warning"
+          message={`Last updated ${staleAge}`}
+          detail={
+            isCriticallyStale
+              ? "The nightly intelligence run may have failed. Check your email for an error report."
+              : undefined
+          }
+          variant={isCriticallyStale ? "critical" : "warning"}
         />
       )}
 

@@ -21,7 +21,7 @@ export function ExecutionZone({ tasks }: ExecutionZoneProps) {
       <SectionContainer title="Next 24h" subtitle="Execution queue">
         <EmptyState
           title="All caught up"
-          description="No pending tasks for the next 24 hours"
+          description="No action items for today. Check back after the next intelligence run."
           icon={<CheckCircle2Icon size={32} strokeWidth={1.5} />}
         />
       </SectionContainer>

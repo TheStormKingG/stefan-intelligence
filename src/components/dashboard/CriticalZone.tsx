@@ -20,7 +20,7 @@ export function CriticalZone({ risks }: CriticalZoneProps) {
       <SectionContainer title="Risks" subtitle="No critical items">
         <EmptyState
           title="All clear"
-          description="No critical or high-severity risks detected"
+          description="No risks identified in today's intelligence scan."
           icon={<ShieldAlertIcon size={32} strokeWidth={1.5} />}
         />
       </SectionContainer>

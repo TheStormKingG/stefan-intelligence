@@ -126,9 +126,23 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Ingest error:", error);
+    const payloadSummary = {
+      report_date: payload.report_date,
+      risks: payload.risks?.length ?? 0,
+      tasks: payload.tasks?.length ?? 0,
+      objectives: payload.objectives?.length ?? 0,
+      metrics: payload.metrics?.length ?? 0,
+    };
+    console.error("Ingest error:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      report_date: payload.report_date,
+      payload_summary: payloadSummary,
+      timestamp: new Date().toISOString(),
+    });
+    const description = error instanceof Error ? error.message : "Unknown database error during ingestion";
     return NextResponse.json(
-      { error: "Internal server error during ingestion" },
+      { success: false, error: description, report_date: payload.report_date },
       { status: 500 }
     );
   }

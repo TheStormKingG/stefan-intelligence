@@ -69,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_objectives_report ON objectives(report_id);
 CREATE INDEX IF NOT EXISTS idx_objectives_status ON objectives(status);
 CREATE INDEX IF NOT EXISTS idx_metrics_report ON metrics(report_id);
-CREATE INDEX IF NOT EXISTS idx_tasks_verification ON tasks(verification_status);
+CREATE INDEX IF NOT EXISTS idx_tasks_verification ON tasks(verification_status) WHERE verification_status IS NOT NULL;
 
 -- Row Level Security (permissive for single-user app)
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
