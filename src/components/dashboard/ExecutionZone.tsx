@@ -22,7 +22,7 @@ export function ExecutionZone({ tasks }: ExecutionZoneProps) {
         <EmptyState
           title="All caught up"
           description="No action items for today. Check back after the next intelligence run."
-          icon={<CheckCircle2Icon size={32} strokeWidth={1.5} />}
+          icon={<CheckCircle2Icon size={24} strokeWidth={1.5} />}
         />
       </SectionContainer>
     );
@@ -35,13 +35,13 @@ export function ExecutionZone({ tasks }: ExecutionZoneProps) {
       action={
         <Link
           href="/tasks"
-          className="text-body-sm text-objective-revenue font-medium"
+          className="text-body-sm font-medium accent-gradient-text"
         >
           See all
         </Link>
       }
     >
-      <div className="card divide-y divide-border">
+      <div className="card divide-y divider-soft">
         {incomplete.map((task, i) => (
           <TaskItem key={task.id} task={task} index={i} compact />
         ))}

@@ -4,13 +4,18 @@
 
 @layer base {
   :root {
-    --color-background: #fafafa;
-    --color-surface: #ffffff;
-    --color-foreground: #1d1d1f;
-    --color-secondary: #6e6e73;
-    --color-tertiary: #86868b;
-    --color-border: #e5e5ea;
-    --color-separator: #c6c6c8;
+    --color-background: #E8EDF4;
+    --color-surface: rgba(255, 255, 255, 0.72);
+    --color-surface-solid: #ffffff;
+    --color-foreground: #1C2A3A;
+    --color-secondary: #5A6B7E;
+    --color-tertiary: #8494A7;
+    --color-border: #D4DBE5;
+    --color-separator: #C8D0DC;
+    --accent-gradient: linear-gradient(135deg, #5B8DEF, #7B6CD9);
+    --neu-shadow: 8px 8px 16px rgba(163, 177, 198, 0.35), -8px -8px 16px rgba(255, 255, 255, 0.9);
+    --neu-shadow-sm: 4px 4px 8px rgba(163, 177, 198, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.85);
+    --neu-inset: inset 3px 3px 6px rgba(163, 177, 198, 0.3), inset -3px -3px 6px rgba(255, 255, 255, 0.7);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -42,57 +47,76 @@
   }
 
   .page-container {
-    @apply px-5 pt-4 pb-28;
+    @apply px-5 pt-6 pb-28;
   }
 
   .card {
-    @apply bg-surface-elevated rounded-card shadow-card;
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: var(--neu-shadow);
+    @apply rounded-card;
   }
 
   .card-interactive {
-    @apply card transition-shadow duration-200 active:shadow-card-hover;
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: var(--neu-shadow);
+    @apply rounded-card transition-shadow duration-200;
+  }
+
+  .card-interactive:active {
+    box-shadow: var(--neu-inset);
   }
 
   .section-title {
-    @apply text-title-sm text-foreground;
+    @apply text-title-sm text-foreground tracking-tight;
   }
 
   .section-subtitle {
-    @apply text-body-sm text-secondary;
+    @apply text-body-sm text-tertiary;
   }
 
   .priority-dot {
-    @apply w-2 h-2 rounded-full flex-shrink-0;
+    @apply w-2.5 h-2.5 rounded-full flex-shrink-0;
+    box-shadow: 0 0 6px currentColor;
   }
 
   .status-badge {
-    @apply text-caption font-medium px-2 py-0.5 rounded-full;
+    @apply text-caption font-medium px-2.5 py-1 rounded-badge;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
 
   .separator {
-    @apply h-px bg-border;
+    @apply h-px;
+    background: var(--color-border);
   }
 
   .skeleton {
-    @apply bg-gray-200 rounded-button animate-shimmer;
+    @apply rounded-button animate-shimmer;
+    background-color: rgba(163, 177, 198, 0.2);
     background-image: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.5),
       transparent
     );
     background-size: 200% 100%;
   }
 
   .bottom-nav {
-    @apply fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app
-      bg-surface-elevated/80 backdrop-blur-xl border-t border-border;
+    @apply fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app;
+    background: rgba(232, 237, 244, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
     padding-bottom: var(--safe-area-bottom);
   }
 
   .nav-item {
-    @apply flex flex-col items-center gap-0.5 py-2 px-3
-      text-tertiary transition-colors duration-150;
+    @apply flex flex-col items-center gap-1 py-2.5 px-4
+      text-tertiary transition-all duration-200;
   }
 
   .nav-item-active {
@@ -100,16 +124,29 @@
   }
 
   .segmented-control {
-    @apply inline-flex bg-gray-100 rounded-lg p-0.5;
+    @apply inline-flex rounded-button p-1;
+    background: var(--color-background);
+    box-shadow: var(--neu-inset);
   }
 
   .segment {
-    @apply px-4 py-1.5 text-body-sm rounded-md transition-all duration-200
-      text-secondary;
+    @apply px-4 py-1.5 text-body-sm rounded-button transition-all duration-200
+      text-tertiary font-medium;
   }
 
   .segment-active {
-    @apply bg-surface-elevated shadow-card text-foreground font-medium;
+    @apply text-foreground;
+    background: var(--color-surface);
+    box-shadow: var(--neu-shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-banner {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    @apply rounded-card;
   }
 }
 
@@ -123,26 +160,46 @@
   }
 
   .risk-border-critical {
-    @apply border-l-[3px] border-severity-critical;
+    border-left: 3px solid #E8505B;
   }
 
   .risk-border-high {
-    @apply border-l-[3px] border-severity-high;
+    border-left: 3px solid #F0923B;
   }
 
   .overdue-tint {
-    @apply bg-severity-critical/[0.03];
+    background: rgba(232, 80, 91, 0.04);
+  }
+
+  .accent-gradient-text {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .accent-gradient-bg {
+    background: var(--accent-gradient);
+  }
+
+  .divider-soft {
+    border-color: rgba(212, 219, 229, 0.5);
   }
 }
 
 input[type="checkbox"] {
-  @apply appearance-none w-[22px] h-[22px] rounded-full border-2 border-border
+  @apply appearance-none w-[24px] h-[24px] rounded-full
     cursor-pointer transition-all duration-200 flex-shrink-0
     relative;
+  background: var(--color-background);
+  box-shadow: var(--neu-inset);
+  border: none;
 }
 
 input[type="checkbox"]:checked {
-  @apply bg-foreground border-foreground;
+  background: var(--accent-gradient);
+  box-shadow: 0 2px 8px rgba(91, 141, 239, 0.35);
+  border: none;
 }
 
 input[type="checkbox"]:checked::after {

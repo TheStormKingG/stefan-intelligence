@@ -35,9 +35,10 @@ export default async function ObjectivesPage() {
 
   return (
     <div className="page-container">
-      <div className="mb-6">
-        <h1 className="text-title-lg text-foreground">Strategy</h1>
-        <p className="text-body-sm text-secondary mt-0.5">
+      <div className="mb-8">
+        <p className="text-caption text-tertiary uppercase tracking-widest mb-1">Strategic</p>
+        <h1 className="text-title-lg text-foreground tracking-tight">Objectives</h1>
+        <p className="text-body-sm text-secondary mt-1">
           SMART objectives and strategic initiatives
         </p>
       </div>
@@ -46,7 +47,7 @@ export default async function ObjectivesPage() {
         <EmptyState
           title="No objectives"
           description="Strategic objectives will appear after report ingestion"
-          icon={<TargetIcon size={40} strokeWidth={1.5} />}
+          icon={<TargetIcon size={24} strokeWidth={1.5} />}
         />
       ) : (
         <div className="space-y-3">

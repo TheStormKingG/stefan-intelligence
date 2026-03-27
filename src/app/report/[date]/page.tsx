@@ -46,9 +46,9 @@ export default async function ReportPage({
     <div className="page-container">
       <Link
         href="/archive"
-        className="inline-flex items-center gap-1.5 text-body-sm text-objective-revenue mb-6"
+        className="inline-flex items-center gap-1.5 text-body-sm font-medium accent-gradient-text mb-6"
       >
-        <ArrowLeftIcon size={16} />
+        <ArrowLeftIcon size={16} className="text-accent-blue" />
         Archive
       </Link>
 
@@ -56,7 +56,7 @@ export default async function ReportPage({
         <EmptyState
           title="Report not found"
           description={`No intelligence report found for ${params.date}`}
-          icon={<FileTextIcon size={40} strokeWidth={1.5} />}
+          icon={<FileTextIcon size={24} strokeWidth={1.5} />}
         />
       ) : (
         <ReportReader report={report} />

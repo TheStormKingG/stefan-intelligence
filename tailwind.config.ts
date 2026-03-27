@@ -9,29 +9,34 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#FAFAFA",
-        foreground: "#1D1D1F",
-        secondary: "#6E6E73",
-        tertiary: "#86868B",
-        border: "#E5E5EA",
-        "surface-elevated": "#FFFFFF",
+        background: "#E8EDF4",
+        foreground: "#1C2A3A",
+        secondary: "#5A6B7E",
+        tertiary: "#8494A7",
+        border: "#D4DBE5",
+        "surface-elevated": "rgba(255, 255, 255, 0.72)",
+        "surface-solid": "#FFFFFF",
         severity: {
-          critical: "#FF3B30",
-          high: "#FF9500",
-          medium: "#FFCC00",
-          low: "#34C759",
+          critical: "#E8505B",
+          high: "#F0923B",
+          medium: "#EAB930",
+          low: "#3FBF6E",
         },
         objective: {
-          revenue: "#007AFF",
-          operational: "#5856D6",
-          strategic: "#AF52DE",
-          growth: "#34C759",
+          revenue: "#5B8DEF",
+          operational: "#7B6CD9",
+          strategic: "#B06ED9",
+          growth: "#3FBF6E",
         },
         status: {
-          "on-track": "#34C759",
-          "at-risk": "#FF9500",
-          behind: "#FF3B30",
-          completed: "#86868B",
+          "on-track": "#3FBF6E",
+          "at-risk": "#F0923B",
+          behind: "#E8505B",
+          completed: "#8494A7",
+        },
+        accent: {
+          blue: "#5B8DEF",
+          purple: "#7B6CD9",
         },
       },
       fontFamily: {
@@ -56,12 +61,16 @@ const config: Config = {
         caption: ["12px", { lineHeight: "16px", fontWeight: "400" }],
       },
       borderRadius: {
-        card: "12px",
-        button: "8px",
+        card: "18px",
+        button: "12px",
+        badge: "20px",
       },
       boxShadow: {
-        card: "0 1px 3px rgba(0, 0, 0, 0.06)",
-        "card-hover": "0 2px 8px rgba(0, 0, 0, 0.08)",
+        neu: "8px 8px 16px rgba(163, 177, 198, 0.35), -8px -8px 16px rgba(255, 255, 255, 0.9)",
+        "neu-sm": "4px 4px 8px rgba(163, 177, 198, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.85)",
+        "neu-inset": "inset 3px 3px 6px rgba(163, 177, 198, 0.3), inset -3px -3px 6px rgba(255, 255, 255, 0.7)",
+        "neu-pressed": "inset 2px 2px 5px rgba(163, 177, 198, 0.35), inset -2px -2px 5px rgba(255, 255, 255, 0.7)",
+        glass: "0 8px 32px rgba(31, 38, 135, 0.08)",
       },
       maxWidth: {
         app: "430px",
@@ -72,15 +81,15 @@ const config: Config = {
       keyframes: {
         "check-bounce": {
           "0%": { transform: "scale(1)" },
-          "50%": { transform: "scale(1.2)" },
+          "50%": { transform: "scale(1.15)" },
           "100%": { transform: "scale(1)" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(8px)" },
+          from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "slide-up": {
-          from: { opacity: "0", transform: "translateY(16px)" },
+          from: { opacity: "0", transform: "translateY(12px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         shimmer: {
@@ -90,8 +99,8 @@ const config: Config = {
       },
       animation: {
         "check-bounce": "check-bounce 200ms ease-out",
-        "fade-in": "fade-in 200ms ease-out",
-        "slide-up": "slide-up 250ms ease-out",
+        "fade-in": "fade-in 250ms ease-out",
+        "slide-up": "slide-up 300ms ease-out both",
         shimmer: "shimmer 1.5s ease-in-out infinite",
       },
     },

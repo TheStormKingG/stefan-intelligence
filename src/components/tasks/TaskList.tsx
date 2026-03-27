@@ -16,7 +16,7 @@ export function TaskList({ tasks }: TaskListProps) {
       <EmptyState
         title="No tasks"
         description="Tasks for this timeframe will appear here"
-        icon={<CheckCircle2Icon size={32} strokeWidth={1.5} />}
+        icon={<CheckCircle2Icon size={24} strokeWidth={1.5} />}
       />
     );
   }
@@ -28,7 +28,7 @@ export function TaskList({ tasks }: TaskListProps) {
   return (
     <div>
       {incomplete.length > 0 && (
-        <div className="card divide-y divide-border mb-4">
+        <div className="card divide-y divider-soft mb-4">
           {incomplete.map((task, i) => (
             <TaskItem key={task.id} task={task} index={i} />
           ))}
@@ -37,10 +37,10 @@ export function TaskList({ tasks }: TaskListProps) {
 
       {completed.length > 0 && (
         <div>
-          <p className="text-caption text-tertiary font-medium uppercase tracking-wide mb-2 px-1">
+          <p className="text-caption text-tertiary font-medium uppercase tracking-widest mb-3 px-1">
             Completed ({completed.length})
           </p>
-          <div className="card divide-y divide-border">
+          <div className="card divide-y divider-soft">
             {completed.map((task, i) => (
               <TaskItem key={task.id} task={task} index={i} />
             ))}

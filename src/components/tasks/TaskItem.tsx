@@ -47,7 +47,7 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
 
   return (
     <div
-      className={`flex items-center gap-3 p-4 transition-all duration-300 animate-slide-up ${
+      className={`flex items-center gap-3.5 p-4 transition-all duration-300 animate-slide-up ${
         completed && verificationStatus === "verified" ? "opacity-40" : ""
       }`}
       style={{ animationDelay: `${index * 40}ms` }}
@@ -65,10 +65,10 @@ export function TaskItem({ task, index = 0, compact = false }: TaskItemProps) {
           {task.title}
         </p>
 
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           {vConfig && (
             <span
-              className={`inline-flex items-center gap-1 ${vConfig.bg} ${vConfig.color} status-badge`}
+              className={`inline-flex items-center gap-1 status-badge ${vConfig.color}`}
             >
               <VerificationIcon status={verificationStatus!} />
               {vConfig.label}

@@ -27,14 +27,14 @@ export function ObjectiveCard({ objective, index = 0 }: ObjectiveCardProps) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`status-badge ${typeConfig.bg} ${typeConfig.color}`}>
+          <div className="flex items-center gap-2 mb-2.5">
+            <span className={`status-badge ${typeConfig.color}`}>
               {typeConfig.label}
             </span>
-            <span className={`status-badge ${statusConfig.color}`}>
-              <span className="flex items-center gap-1">
+            <span className="status-badge">
+              <span className="flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
-                {statusConfig.label}
+                <span className={statusConfig.color}>{statusConfig.label}</span>
               </span>
             </span>
           </div>
@@ -45,7 +45,7 @@ export function ObjectiveCard({ objective, index = 0 }: ObjectiveCardProps) {
 
           {objective.due_date && (
             <p
-              className={`text-body-sm mt-2 ${
+              className={`text-body-sm mt-2.5 ${
                 overdue ? "text-severity-critical font-medium" : "text-tertiary"
               }`}
             >
@@ -64,7 +64,7 @@ export function ObjectiveCard({ objective, index = 0 }: ObjectiveCardProps) {
       </div>
 
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-border animate-fade-in space-y-3">
+        <div className="mt-4 pt-4 border-t divider-soft animate-fade-in space-y-3">
           {objective.description && (
             <p className="text-body-sm text-secondary leading-relaxed">
               {objective.description}

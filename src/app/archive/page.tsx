@@ -25,9 +25,10 @@ export default async function ArchivePage() {
 
   return (
     <div className="page-container">
-      <div className="mb-6">
-        <h1 className="text-title-lg text-foreground">Archive</h1>
-        <p className="text-body-sm text-secondary mt-0.5">
+      <div className="mb-8">
+        <p className="text-caption text-tertiary uppercase tracking-widest mb-1">History</p>
+        <h1 className="text-title-lg text-foreground tracking-tight">Archive</h1>
+        <p className="text-body-sm text-secondary mt-1">
           Historical intelligence reports
         </p>
       </div>
@@ -36,15 +37,15 @@ export default async function ArchivePage() {
         <EmptyState
           title="No reports"
           description="Intelligence reports will appear here after ingestion"
-          icon={<ArchiveIcon size={40} strokeWidth={1.5} />}
+          icon={<ArchiveIcon size={24} strokeWidth={1.5} />}
         />
       ) : (
-        <div className="card divide-y divide-border">
+        <div className="card divide-y divider-soft">
           {reports.map((report, i) => (
             <Link
               key={report.id}
               href={`/report/${report.report_date}`}
-              className="flex items-center justify-between p-4 transition-colors duration-150 active:bg-gray-50 animate-slide-up"
+              className="flex items-center justify-between p-4 transition-all duration-200 active:bg-white/30 animate-slide-up"
               style={{ animationDelay: `${i * 30}ms` }}
             >
               <div>
@@ -52,7 +53,7 @@ export default async function ArchivePage() {
                   {formatDate(report.report_date)}
                 </p>
                 {report.summary && (
-                  <p className="text-body-sm text-secondary mt-0.5 line-clamp-1">
+                  <p className="text-body-sm text-tertiary mt-0.5 line-clamp-1">
                     {report.summary}
                   </p>
                 )}

@@ -21,7 +21,7 @@ export function BottomNav() {
 
   return (
     <nav className="bottom-nav z-50">
-      <div className="flex items-center justify-around px-2 pt-1">
+      <div className="flex items-center justify-around px-2 pt-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href || pathname.startsWith(href + "/");
@@ -31,8 +31,13 @@ export function BottomNav() {
               href={href}
               className={`nav-item ${isActive ? "nav-item-active" : ""}`}
             >
-              <Icon size={22} strokeWidth={isActive ? 2 : 1.5} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <div className="relative">
+                <Icon size={22} strokeWidth={isActive ? 2 : 1.5} />
+                {isActive && (
+                  <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-full accent-gradient-bg" />
+                )}
+              </div>
+              <span className="text-[10px] font-medium mt-0.5">{label}</span>
             </Link>
           );
         })}

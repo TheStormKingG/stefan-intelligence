@@ -21,7 +21,7 @@ export function CriticalZone({ risks }: CriticalZoneProps) {
         <EmptyState
           title="All clear"
           description="No risks identified in today's intelligence scan."
-          icon={<ShieldAlertIcon size={32} strokeWidth={1.5} />}
+          icon={<ShieldAlertIcon size={24} strokeWidth={1.5} />}
         />
       </SectionContainer>
     );
@@ -50,14 +50,15 @@ function RiskCard({ risk, index }: { risk: Risk; index: number }) {
   return (
     <button
       onClick={() => setExpanded(!expanded)}
-      className={`card w-full text-left p-4 pl-4.5 ${borderClass} animate-slide-up`}
+      className={`card w-full text-left p-5 ${borderClass} animate-slide-up`}
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-2">
             <span
-              className={`status-badge ${config.bg} ${config.color}`}
+              className={`status-badge ${config.color}`}
+              style={{ background: `${config.bg.includes('/') ? '' : 'rgba(255,255,255,0.5)'}` }}
             >
               {config.label}
             </span>
@@ -78,18 +79,18 @@ function RiskCard({ risk, index }: { risk: Risk; index: number }) {
       </div>
 
       {expanded && (
-        <div className="mt-3 pt-3 border-t border-border animate-fade-in">
+        <div className="mt-4 pt-4 border-t divider-soft animate-fade-in">
           {risk.description && (
-            <p className="text-body-sm text-secondary mb-2">
+            <p className="text-body-sm text-secondary mb-2 leading-relaxed">
               {risk.description}
             </p>
           )}
           {risk.mitigation && (
-            <div className="mt-2">
+            <div className="mt-3">
               <p className="text-caption text-tertiary font-medium uppercase tracking-wide mb-1">
                 Mitigation
               </p>
-              <p className="text-body-sm text-secondary">{risk.mitigation}</p>
+              <p className="text-body-sm text-secondary leading-relaxed">{risk.mitigation}</p>
             </div>
           )}
         </div>

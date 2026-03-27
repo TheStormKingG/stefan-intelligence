@@ -23,10 +23,10 @@ export function TasksPageClient({ tasks }: TasksPageClientProps) {
 
   return (
     <div className="page-container">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-title-lg text-foreground">Tasks</h1>
-          <p className="text-body-sm text-secondary mt-0.5">Execution queue</p>
+          <p className="text-caption text-tertiary uppercase tracking-widest mb-1">Execution</p>
+          <h1 className="text-title-lg text-foreground tracking-tight">Tasks</h1>
         </div>
         <SegmentedControl
           segments={SEGMENTS}

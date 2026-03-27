@@ -10,14 +10,14 @@ export function ReportReader({ report }: ReportReaderProps) {
   return (
     <article className="animate-fade-in">
       <header className="mb-8">
-        <p className="text-caption text-tertiary uppercase tracking-wide mb-2">
+        <p className="text-caption text-tertiary uppercase tracking-widest mb-2">
           Intelligence Report
         </p>
-        <h1 className="text-title-lg text-foreground">
+        <h1 className="text-title-lg text-foreground tracking-tight">
           {formatDate(report.report_date)}
         </h1>
         {report.generated_at && (
-          <p className="text-body-sm text-tertiary mt-1">
+          <p className="text-body-sm text-tertiary mt-1.5">
             Generated{" "}
             {new Date(report.generated_at).toLocaleTimeString("en-US", {
               hour: "2-digit",
@@ -30,22 +30,26 @@ export function ReportReader({ report }: ReportReaderProps) {
       {report.summary && (
         <section className="mb-8">
           <h2 className="text-title-sm text-foreground mb-3">Summary</h2>
-          <p className="text-body-lg text-secondary leading-relaxed">
-            {report.summary}
-          </p>
+          <div className="card p-5">
+            <p className="text-body-lg text-secondary leading-relaxed">
+              {report.summary}
+            </p>
+          </div>
         </section>
       )}
 
       {report.risks.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-title-sm text-foreground mb-3">Risks</h2>
-          <div className="space-y-4">
+          <h2 className="text-title-sm text-foreground mb-3 px-1">Risks</h2>
+          <div className="space-y-3">
             {report.risks.map((risk) => {
               const config = SEVERITY_CONFIG[risk.severity];
+              const borderClass =
+                risk.severity === "critical" ? "risk-border-critical" : "risk-border-high";
               return (
-                <div key={risk.id} className="border-l-2 pl-4" style={{ borderColor: `var(--tw-${config.border})` }}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`status-badge ${config.bg} ${config.color}`}>
+                <div key={risk.id} className={`card p-4 ${risk.severity === "critical" || risk.severity === "high" ? borderClass : ""}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`status-badge ${config.color}`}>
                       {config.label}
                     </span>
                     {risk.category && (
@@ -68,19 +72,19 @@ export function ReportReader({ report }: ReportReaderProps) {
 
       {report.tasks.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-title-sm text-foreground mb-3">Tasks</h2>
-          <div className="space-y-3">
+          <h2 className="text-title-sm text-foreground mb-3 px-1">Tasks</h2>
+          <div className="card divide-y divider-soft">
             {report.tasks.map((task) => {
               const config = PRIORITY_CONFIG[task.priority];
               return (
-                <div key={task.id} className="flex items-start gap-3">
-                  <span className={`priority-dot mt-2 ${config.dotColor}`} />
+                <div key={task.id} className="flex items-start gap-3 p-4">
+                  <span className={`priority-dot mt-1.5 ${config.dotColor}`} />
                   <div>
                     <p className={`text-body-md font-medium ${task.completed ? "text-tertiary line-through" : "text-foreground"}`}>
                       {task.title}
                     </p>
                     {task.description && (
-                      <p className="text-body-sm text-secondary mt-0.5">{task.description}</p>
+                      <p className="text-body-sm text-secondary mt-0.5 leading-relaxed">{task.description}</p>
                     )}
                   </div>
                 </div>
@@ -92,15 +96,15 @@ export function ReportReader({ report }: ReportReaderProps) {
 
       {report.objectives.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-title-sm text-foreground mb-3">Objectives</h2>
-          <div className="space-y-4">
+          <h2 className="text-title-sm text-foreground mb-3 px-1">Objectives</h2>
+          <div className="space-y-3">
             {report.objectives.map((obj) => {
               const typeConfig = OBJECTIVE_TYPE_CONFIG[obj.type];
               const statusConfig = STATUS_CONFIG[obj.status];
               return (
-                <div key={obj.id}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`status-badge ${typeConfig.bg} ${typeConfig.color}`}>
+                <div key={obj.id} className="card p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`status-badge ${typeConfig.color}`}>
                       {typeConfig.label}
                     </span>
                     <span className={`text-caption ${statusConfig.color}`}>
@@ -123,9 +127,11 @@ export function ReportReader({ report }: ReportReaderProps) {
 
       {report.raw_content && (
         <section className="mb-8">
-          <h2 className="text-title-sm text-foreground mb-3">Full Report</h2>
-          <div className="text-body-md text-secondary leading-relaxed whitespace-pre-wrap">
-            {report.raw_content}
+          <h2 className="text-title-sm text-foreground mb-3 px-1">Full Report</h2>
+          <div className="card p-5">
+            <div className="text-body-md text-secondary leading-relaxed whitespace-pre-wrap">
+              {report.raw_content}
+            </div>
           </div>
         </section>
       )}

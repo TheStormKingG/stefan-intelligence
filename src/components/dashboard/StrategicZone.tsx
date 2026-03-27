@@ -20,7 +20,7 @@ export function StrategicZone({ objectives }: StrategicZoneProps) {
         <EmptyState
           title="No objectives"
           description="No strategic objectives currently tracked."
-          icon={<TargetIcon size={32} strokeWidth={1.5} />}
+          icon={<TargetIcon size={24} strokeWidth={1.5} />}
         />
       </SectionContainer>
     );
@@ -34,7 +34,7 @@ export function StrategicZone({ objectives }: StrategicZoneProps) {
       action={
         <Link
           href="/objectives"
-          className="text-body-sm text-objective-revenue font-medium"
+          className="text-body-sm font-medium accent-gradient-text"
         >
           See all
         </Link>
@@ -64,13 +64,13 @@ function ObjectivePreview({
   return (
     <button
       onClick={() => setExpanded(!expanded)}
-      className={`card text-left p-3.5 animate-slide-up ${
+      className={`card text-left p-4 animate-slide-up ${
         overdue ? "overdue-tint" : ""
       } ${expanded ? "col-span-2" : ""}`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
+      <div className="flex items-center gap-2 mb-2.5">
+        <span className={`w-2 h-2 rounded-full ${statusConfig.dotColor}`} />
         <span className={`text-caption font-medium ${typeConfig.color}`}>
           {typeConfig.label}
         </span>
@@ -80,7 +80,7 @@ function ObjectivePreview({
       </p>
       {objective.due_date && (
         <p
-          className={`text-caption mt-1.5 ${
+          className={`text-caption mt-2 ${
             overdue ? "text-severity-critical" : "text-tertiary"
           }`}
         >
@@ -89,8 +89,8 @@ function ObjectivePreview({
       )}
 
       {expanded && objective.notes && (
-        <div className="mt-3 pt-3 border-t border-border animate-fade-in">
-          <p className="text-body-sm text-secondary">{objective.notes}</p>
+        <div className="mt-3 pt-3 border-t divider-soft animate-fade-in">
+          <p className="text-body-sm text-secondary leading-relaxed">{objective.notes}</p>
         </div>
       )}
     </button>

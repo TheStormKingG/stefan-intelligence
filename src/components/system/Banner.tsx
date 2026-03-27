@@ -7,10 +7,16 @@ interface BannerProps {
 }
 
 export function Banner({ message, detail, variant = "info" }: BannerProps) {
-  const styles = {
-    info: "bg-objective-revenue/6 text-objective-revenue",
-    warning: "bg-severity-high/8 text-severity-high",
-    critical: "bg-severity-critical/8 text-severity-critical",
+  const iconColors = {
+    info: "text-accent-blue",
+    warning: "text-severity-high",
+    critical: "text-severity-critical",
+  };
+
+  const borderColors = {
+    info: "border-accent-blue/20",
+    warning: "border-severity-high/20",
+    critical: "border-severity-critical/20",
   };
 
   const Icon =
@@ -22,13 +28,14 @@ export function Banner({ message, detail, variant = "info" }: BannerProps) {
 
   return (
     <div
-      className={`flex items-start gap-2.5 px-4 py-3 rounded-card text-body-sm mb-6 animate-fade-in ${styles[variant]}`}
+      className={`glass-banner flex items-start gap-3 px-4 py-3.5 mb-6 animate-fade-in ${borderColors[variant]}`}
+      style={{ borderLeft: `3px solid` }}
     >
-      <Icon size={16} strokeWidth={2} className="flex-shrink-0 mt-0.5" />
+      <Icon size={16} strokeWidth={2} className={`flex-shrink-0 mt-0.5 ${iconColors[variant]}`} />
       <div>
-        <span>{message}</span>
+        <span className="text-body-sm text-foreground font-medium">{message}</span>
         {detail && (
-          <p className="mt-1 opacity-75 text-caption">{detail}</p>
+          <p className="mt-1 text-caption text-tertiary">{detail}</p>
         )}
       </div>
     </div>

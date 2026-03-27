@@ -15,7 +15,7 @@ export function SectionContainer({
 }: SectionContainerProps) {
   return (
     <section className={`mb-8 ${className}`}>
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-baseline justify-between mb-4 px-1">
         <div>
           <h2 className="section-title">{title}</h2>
           {subtitle && <p className="section-subtitle mt-0.5">{subtitle}</p>}
