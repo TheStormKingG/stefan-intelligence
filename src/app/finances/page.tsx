@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FinancialEntry, FinancialSummary, FinancialApiResponse, PayslipData } from "@/lib/types";
+import {
+  FinancialEntry,
+  FinancialSummary,
+  FinancialApiResponse,
+  PayslipData,
+  BankBalanceData,
+  BalanceSnapshot,
+} from "@/lib/types";
 import { SegmentedControl } from "@/components/system/SegmentedControl";
 import { EmptyState } from "@/components/system/EmptyState";
 import {
@@ -13,6 +20,7 @@ import {
   CalendarDaysIcon,
   LightbulbIcon,
   ChevronDownIcon,
+  LandmarkIcon,
 } from "lucide-react";
 
 const SEGMENTS = [
@@ -71,7 +79,8 @@ export default function FinancesPage() {
   const [months, setMonths] = useState("3");
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
-  const [tip, setTip] = useState<string>("");
+  const [tip, setTip] = useState("");
+  const [bankBalance, setBankBalance] = useState<BankBalanceData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,11 +91,13 @@ export default function FinancesPage() {
         setEntries(data.entries ?? []);
         setSummary(data.summary ?? null);
         setTip(data.financial_tip ?? "");
+        setBankBalance(data.bank_balance ?? null);
       })
       .catch(() => {
         setEntries([]);
         setSummary(null);
         setTip("");
+        setBankBalance(null);
       })
       .finally(() => setLoading(false));
   }, [months]);
@@ -95,8 +106,10 @@ export default function FinancesPage() {
     (e) => e.entry_type === "income" && e.payslip_data
   )?.payslip_data ?? null;
 
-  const isPositive = (summary?.net_balance_gyd ?? 0) >= 0;
-  const hasData = entries.length > 0 || (summary && summary.transaction_count > 0);
+  const hasSnapshots = bankBalance && bankBalance.snapshots.length > 0;
+  const savings = bankBalance?.snapshots.find((s) => Number(s.current_balance) >= 0) ?? null;
+  const loan = bankBalance?.snapshots.find((s) => Number(s.current_balance) < 0) ?? null;
+  const hasData = entries.length > 0 || (summary && summary.transaction_count > 0) || hasSnapshots;
 
   return (
     <div className="page-container">
@@ -115,8 +128,8 @@ export default function FinancesPage() {
       {loading ? (
         <div className="space-y-4">
           <div className="card p-6"><div className="skeleton h-16 w-48 mx-auto mb-3" /><div className="skeleton h-4 w-32 mx-auto" /></div>
+          <div className="card p-5"><div className="skeleton h-10 w-full" /></div>
           <div className="flex gap-3"><div className="card p-4 flex-1"><div className="skeleton h-8 w-full" /></div><div className="card p-4 flex-1"><div className="skeleton h-8 w-full" /></div><div className="card p-4 flex-1"><div className="skeleton h-8 w-full" /></div></div>
-          <div className="card p-4"><div className="skeleton h-10 w-full mb-2" /><div className="skeleton h-10 w-full" /></div>
         </div>
       ) : !hasData ? (
         <EmptyState
@@ -126,13 +139,31 @@ export default function FinancesPage() {
         />
       ) : (
         <>
-          {summary && <BalanceCard summary={summary} isPositive={isPositive} />}
+          {/* A: Bank Balance or fallback Net Balance */}
+          {hasSnapshots ? (
+            <BankBalanceCard savings={savings} loan={loan} lastUpdated={bankBalance!.last_updated} />
+          ) : summary ? (
+            <FallbackBalanceCard summary={summary} />
+          ) : null}
+
+          {/* B: Tracked Activity */}
+          {summary && <TrackedActivityCard summary={summary} period={PERIOD_LABELS[months]} />}
+
+          {/* C: Analytics */}
           {summary && summary.total_expenses_gyd > 0 && <AnalyticsCards summary={summary} />}
+
+          {/* D: Top Spending */}
           {summary && summary.top_categories.length > 0 && (
             <TopSpending categories={summary.top_categories} period={PERIOD_LABELS[months]} />
           )}
+
+          {/* E: Financial Tip */}
           {tip && <TipCard tip={tip} />}
+
+          {/* F: Spending Log */}
           {entries.length > 0 && <SpendingLog entries={entries} />}
+
+          {/* G: Payslip Breakdown */}
           {latestPayslip && <PayslipBreakdown payslip={latestPayslip} />}
         </>
       )}
@@ -140,9 +171,76 @@ export default function FinancesPage() {
   );
 }
 
-/* ── A: Balance Card ── */
+/* ── A: Bank Balance Card ── */
 
-function BalanceCard({ summary, isPositive }: { summary: FinancialSummary; isPositive: boolean }) {
+function BankBalanceCard({
+  savings,
+  loan,
+  lastUpdated,
+}: {
+  savings: BalanceSnapshot | null;
+  loan: BalanceSnapshot | null;
+  lastUpdated: string | null;
+}) {
+  const available = savings ? Number(savings.available_balance ?? savings.current_balance) : 0;
+  const current = savings ? Number(savings.current_balance) : 0;
+  const loanBal = loan ? Math.abs(Number(loan.current_balance)) : 0;
+  const loanNote = loan?.notes ?? null;
+
+  const nextPaymentMatch = loanNote?.match(/next payment (?:GYD\s?)?([\d,]+(?:\.\d+)?)/i);
+  const nextPayment = nextPaymentMatch ? parseFloat(nextPaymentMatch[1].replace(/,/g, "")) : null;
+
+  return (
+    <div className="card p-6 mb-4 animate-fade-in">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <LandmarkIcon size={14} className="text-tertiary" />
+          <p className="text-caption text-tertiary uppercase tracking-widest">Available Balance</p>
+        </div>
+        <p className="text-[32px] font-bold tabular-nums tracking-tight text-severity-low">
+          ${fmtGYD(available)}
+          <span className="text-body-sm font-normal text-tertiary ml-1">GYD</span>
+        </p>
+        {current !== available && (
+          <p className="text-body-sm text-tertiary mt-1 tabular-nums">
+            Current: ${fmtGYD(current)} GYD
+          </p>
+        )}
+        {lastUpdated && (
+          <p className="text-caption text-tertiary mt-1">
+            as of {fmtDate(lastUpdated)}
+          </p>
+        )}
+      </div>
+
+      {loan && (
+        <div className="mt-5 pt-4 border-t divider-soft">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-body-sm text-tertiary">Loan Balance</p>
+              <p className="text-body-sm text-secondary font-medium tabular-nums mt-0.5">
+                -${fmtGYD(loanBal)} GYD
+              </p>
+            </div>
+            {nextPayment && (
+              <div className="text-right">
+                <p className="text-caption text-tertiary">Next Payment</p>
+                <p className="text-body-sm text-secondary font-medium tabular-nums mt-0.5">
+                  ${fmtGYD(nextPayment)} GYD
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── A fallback: old Net Balance when no snapshots ── */
+
+function FallbackBalanceCard({ summary }: { summary: FinancialSummary }) {
+  const isPositive = summary.net_balance_gyd >= 0;
   return (
     <div className="card p-6 mb-4 text-center animate-fade-in">
       <p className="text-caption text-tertiary uppercase tracking-widest mb-2">Net Balance</p>
@@ -151,7 +249,7 @@ function BalanceCard({ summary, isPositive }: { summary: FinancialSummary; isPos
         <span className="text-body-sm font-normal text-tertiary ml-1">GYD</span>
       </p>
       <p className="text-caption text-tertiary mt-1">
-        Based on tracked income and expenses
+        Computed from tracked income and expenses
       </p>
 
       <div className="flex items-center justify-center gap-8 mt-5 pt-5 border-t divider-soft">
@@ -185,7 +283,45 @@ function BalanceCard({ summary, isPositive }: { summary: FinancialSummary; isPos
   );
 }
 
-/* ── B: Analytics Cards ── */
+/* ── B: Tracked Activity Card ── */
+
+function TrackedActivityCard({ summary, period }: { summary: FinancialSummary; period: string }) {
+  return (
+    <div className="card p-5 mb-4 animate-fade-in">
+      <p className="text-caption text-tertiary uppercase tracking-widest mb-3">
+        Tracked This Period ({period})
+      </p>
+      <div className="flex items-center justify-around">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <TrendingUpIcon size={13} className="text-severity-low" />
+            <span className="text-caption text-tertiary">Income</span>
+          </div>
+          <p className="text-title-sm text-severity-low tabular-nums">
+            ${fmtGYD(summary.total_income_gyd)}
+          </p>
+        </div>
+        <div className="w-px h-9 bg-border" />
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <TrendingDownIcon size={13} className="text-severity-critical" />
+            <span className="text-caption text-tertiary">Expenses</span>
+          </div>
+          <p className="text-title-sm text-severity-critical tabular-nums">
+            ${fmtGYD(summary.total_expenses_gyd)}
+          </p>
+        </div>
+      </div>
+      {summary.total_expenses_usd > 0 && (
+        <p className="text-caption text-tertiary mt-3 text-center">
+          + {fmtUSD(summary.total_expenses_usd)} USD expenses
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ── C: Analytics Cards ── */
 
 function AnalyticsCards({ summary }: { summary: FinancialSummary }) {
   const items = [
@@ -211,7 +347,7 @@ function AnalyticsCards({ summary }: { summary: FinancialSummary }) {
   );
 }
 
-/* ── C: Top Spending Categories ── */
+/* ── D: Top Spending Categories ── */
 
 function TopSpending({ categories, period }: { categories: FinancialSummary["top_categories"]; period: string }) {
   const maxGyd = Math.max(...categories.map((c) => c.total_gyd), 1);
@@ -262,7 +398,7 @@ function TopSpending({ categories, period }: { categories: FinancialSummary["top
   );
 }
 
-/* ── D: Financial Tip ── */
+/* ── E: Financial Tip ── */
 
 function TipCard({ tip }: { tip: string }) {
   return (
@@ -275,7 +411,7 @@ function TipCard({ tip }: { tip: string }) {
   );
 }
 
-/* ── E: Spending Log ── */
+/* ── F: Spending Log ── */
 
 function SpendingLog({ entries }: { entries: FinancialEntry[] }) {
   return (
@@ -341,7 +477,7 @@ function LogRow({ entry, index }: { entry: FinancialEntry; index: number }) {
   );
 }
 
-/* ── F: Payslip Breakdown ── */
+/* ── G: Payslip Breakdown ── */
 
 function PayslipBreakdown({ payslip }: { payslip: PayslipData }) {
   const [expanded, setExpanded] = useState(false);
@@ -368,21 +504,16 @@ function PayslipBreakdown({ payslip }: { payslip: PayslipData }) {
         <div className="card mt-2 p-4 animate-fade-in">
           <div className="space-y-2.5">
             <PayslipRow label="Basic Pay" amount={payslip.basic_pay} />
-
             {payslip.allowances.map((a) => (
               <PayslipRow key={a.name} label={a.name} amount={a.amount} indent />
             ))}
-
             <div className="border-t divider-soft pt-2.5">
               <PayslipRow label="Gross Pay" amount={payslip.gross_pay} bold />
             </div>
-
             {payslip.deductions.map((d) => (
               <PayslipRow key={d.name} label={d.name} amount={-d.amount} indent />
             ))}
-
             <PayslipRow label="Total Deductions" amount={-payslip.total_deductions} />
-
             <div className="border-t divider-soft pt-2.5">
               <PayslipRow label="Net Pay" amount={payslip.net_pay} bold highlight />
             </div>

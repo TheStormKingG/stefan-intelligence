@@ -106,6 +106,23 @@ export interface ReportWithChildren extends Report {
   metrics: Metric[];
 }
 
+export interface BalanceSnapshot {
+  id: string;
+  snapshot_date: string;
+  account_name: string;
+  current_balance: number;
+  available_balance: number | null;
+  currency: string;
+  source: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface BankBalanceData {
+  snapshots: BalanceSnapshot[];
+  last_updated: string | null;
+}
+
 export interface IngestPayload {
   report_date: string;
   raw_content?: string;
@@ -120,6 +137,7 @@ export interface IngestPayload {
   objectives: Omit<Objective, "id" | "report_id" | "created_at">[];
   metrics: Omit<Metric, "id" | "report_id" | "created_at">[];
   financial_entries?: Omit<FinancialEntry, "id" | "report_id" | "created_at">[];
+  balance_snapshots?: Omit<BalanceSnapshot, "id" | "created_at">[];
 }
 
 export interface CategoryBreakdown {
@@ -148,6 +166,7 @@ export interface FinancialApiResponse {
   entries: FinancialEntry[];
   summary: FinancialSummary;
   financial_tip: string;
+  bank_balance: BankBalanceData;
 }
 
 export interface ComputedMetrics {

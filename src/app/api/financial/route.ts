@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import { FinancialEntry, FinancialSummary, CategoryBreakdown } from "@/lib/types";
+import { FinancialEntry, FinancialSummary, CategoryBreakdown, BalanceSnapshot, BankBalanceData } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -147,5 +147,30 @@ export async function GET(request: NextRequest) {
     typed.length,
   );
 
-  return NextResponse.json({ entries: typed, summary, financial_tip });
+  const { data: allSnapshots } = await supabase
+    .from("balance_snapshots")
+    .select("*")
+    .order("snapshot_date", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  const latestByAccount = new Map<string, BalanceSnapshot>();
+  for (const snap of (allSnapshots ?? []) as BalanceSnapshot[]) {
+    if (!latestByAccount.has(snap.account_name)) {
+      latestByAccount.set(snap.account_name, snap);
+    }
+  }
+
+  const snapshots = Array.from(latestByAccount.values());
+  const lastUpdated = snapshots.length > 0
+    ? snapshots.reduce((latest, s) =>
+        s.snapshot_date > latest ? s.snapshot_date : latest,
+      snapshots[0].snapshot_date)
+    : null;
+
+  const bank_balance: BankBalanceData = {
+    snapshots,
+    last_updated: lastUpdated,
+  };
+
+  return NextResponse.json({ entries: typed, summary, financial_tip, bank_balance });
 }

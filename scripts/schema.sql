@@ -97,9 +97,25 @@ ALTER TABLE objectives ENABLE ROW LEVEL SECURITY;
 ALTER TABLE metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE financial_entries ENABLE ROW LEVEL SECURITY;
 
+CREATE TABLE IF NOT EXISTS balance_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  snapshot_date DATE NOT NULL,
+  account_name TEXT NOT NULL,
+  current_balance DECIMAL(14,2) NOT NULL,
+  available_balance DECIMAL(14,2),
+  currency TEXT NOT NULL DEFAULT 'GYD',
+  source TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_snapshots_date ON balance_snapshots (snapshot_date DESC);
+ALTER TABLE balance_snapshots ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Allow all access to reports" ON reports FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to risks" ON risks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to tasks" ON tasks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to objectives" ON objectives FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to metrics" ON metrics FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to financial_entries" ON financial_entries FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all access to balance_snapshots" ON balance_snapshots FOR ALL USING (true) WITH CHECK (true);
