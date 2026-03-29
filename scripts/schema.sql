@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS financial_entries (
   description TEXT NOT NULL,
   category TEXT,
   source TEXT,
+  payslip_data JSONB,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

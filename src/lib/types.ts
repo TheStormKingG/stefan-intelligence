@@ -64,6 +64,27 @@ export interface Metric {
 
 export type EntryType = "income" | "expense";
 
+export interface PayslipAllowance {
+  name: string;
+  amount: number;
+}
+
+export interface PayslipDeduction {
+  name: string;
+  amount: number;
+}
+
+export interface PayslipData {
+  employer: string;
+  pay_period: string;
+  basic_pay: number;
+  allowances: PayslipAllowance[];
+  gross_pay: number;
+  deductions: PayslipDeduction[];
+  total_deductions: number;
+  net_pay: number;
+}
+
 export interface FinancialEntry {
   id: string;
   report_id: string;
@@ -74,6 +95,7 @@ export interface FinancialEntry {
   description: string;
   category: string | null;
   source: string | null;
+  payslip_data: PayslipData | null;
   created_at: string;
 }
 
@@ -100,11 +122,32 @@ export interface IngestPayload {
   financial_entries?: Omit<FinancialEntry, "id" | "report_id" | "created_at">[];
 }
 
+export interface CategoryBreakdown {
+  category: string;
+  total_gyd: number;
+  total_usd: number;
+  percentage: number;
+}
+
 export interface FinancialSummary {
   total_income_gyd: number;
   total_expenses_gyd: number;
   total_expenses_usd: number;
   net_balance_gyd: number;
+  avg_daily_spend_gyd: number;
+  avg_weekly_spend_gyd: number;
+  avg_monthly_spend_gyd: number;
+  top_categories: CategoryBreakdown[];
+  period_days: number;
+  transaction_count: number;
+  first_transaction_date: string | null;
+  last_transaction_date: string | null;
+}
+
+export interface FinancialApiResponse {
+  entries: FinancialEntry[];
+  summary: FinancialSummary;
+  financial_tip: string;
 }
 
 export interface ComputedMetrics {
