@@ -6,9 +6,10 @@ export const fetchCache = "force-no-store";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "");
+  const token = authHeader?.replace("Bearer ", "").trim();
+  const expected = process.env.INGEST_API_TOKEN?.trim();
 
-  if (!token || token !== process.env.INGEST_API_TOKEN) {
+  if (!token || !expected || token !== expected) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
