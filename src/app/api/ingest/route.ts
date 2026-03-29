@@ -65,12 +65,16 @@ export async function POST(request: NextRequest) {
 
       if (updateError) throw updateError;
 
-      await Promise.all([
+      const deletes = [
         supabase.from("risks").delete().eq("report_id", reportId),
         supabase.from("tasks").delete().eq("report_id", reportId),
         supabase.from("objectives").delete().eq("report_id", reportId),
         supabase.from("metrics").delete().eq("report_id", reportId),
-      ]);
+      ];
+      if (Array.isArray(payload.financial_entries)) {
+        deletes.push(supabase.from("financial_entries").delete().eq("report_id", reportId));
+      }
+      await Promise.all(deletes);
     } else {
       const { data: newReport, error: insertError } = await supabase
         .from("reports")
@@ -122,6 +126,13 @@ export async function POST(request: NextRequest) {
       if (error) throw error;
     }
 
+    if (Array.isArray(payload.financial_entries) && payload.financial_entries.length > 0) {
+      const { error } = await supabase.from("financial_entries").insert(
+        payload.financial_entries.map((f) => ({ ...f, report_id: reportId }))
+      );
+      if (error) throw error;
+    }
+
     return NextResponse.json(
       { success: true, report_id: reportId },
       { status: 200 }
@@ -133,6 +144,7 @@ export async function POST(request: NextRequest) {
       tasks: payload.tasks?.length ?? 0,
       objectives: payload.objectives?.length ?? 0,
       metrics: payload.metrics?.length ?? 0,
+      financial_entries: payload.financial_entries?.length ?? 0,
     };
     console.error("Ingest error:", {
       message: error instanceof Error ? error.message : String(error),

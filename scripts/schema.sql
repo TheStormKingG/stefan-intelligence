@@ -71,15 +71,34 @@ CREATE INDEX IF NOT EXISTS idx_objectives_status ON objectives(status);
 CREATE INDEX IF NOT EXISTS idx_metrics_report ON metrics(report_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_verification ON tasks(verification_status) WHERE verification_status IS NOT NULL;
 
+CREATE TABLE IF NOT EXISTS financial_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  report_id UUID REFERENCES reports(id) ON DELETE CASCADE,
+  entry_type TEXT NOT NULL CHECK (entry_type IN ('income', 'expense')),
+  date DATE NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'GYD',
+  description TEXT NOT NULL,
+  category TEXT,
+  source TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_financial_date ON financial_entries (date DESC);
+CREATE INDEX IF NOT EXISTS idx_financial_report ON financial_entries (report_id);
+CREATE INDEX IF NOT EXISTS idx_financial_type ON financial_entries (entry_type);
+
 -- Row Level Security (permissive for single-user app)
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE risks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE objectives ENABLE ROW LEVEL SECURITY;
 ALTER TABLE metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE financial_entries ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow all access to reports" ON reports FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to risks" ON risks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to tasks" ON tasks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to objectives" ON objectives FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to metrics" ON metrics FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all access to financial_entries" ON financial_entries FOR ALL USING (true) WITH CHECK (true);

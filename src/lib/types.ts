@@ -62,6 +62,21 @@ export interface Metric {
   created_at: string;
 }
 
+export type EntryType = "income" | "expense";
+
+export interface FinancialEntry {
+  id: string;
+  report_id: string;
+  entry_type: EntryType;
+  date: string;
+  amount: number;
+  currency: string;
+  description: string;
+  category: string | null;
+  source: string | null;
+  created_at: string;
+}
+
 export interface ReportWithChildren extends Report {
   risks: Risk[];
   tasks: Task[];
@@ -82,6 +97,14 @@ export interface IngestPayload {
   })[];
   objectives: Omit<Objective, "id" | "report_id" | "created_at">[];
   metrics: Omit<Metric, "id" | "report_id" | "created_at">[];
+  financial_entries?: Omit<FinancialEntry, "id" | "report_id" | "created_at">[];
+}
+
+export interface FinancialSummary {
+  total_income_gyd: number;
+  total_expenses_gyd: number;
+  total_expenses_usd: number;
+  net_balance_gyd: number;
 }
 
 export interface ComputedMetrics {
