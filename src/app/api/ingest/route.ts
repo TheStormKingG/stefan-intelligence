@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
           raw_content: payload.raw_content ?? null,
           summary: payload.summary ?? null,
           generated_at: payload.generated_at ?? null,
+          coaching_insight: payload.coaching_insight ?? null,
+          performance_score: payload.performance_score ?? null,
           ingested_at: new Date().toISOString(),
         })
         .eq("id", reportId);
@@ -83,6 +85,8 @@ export async function POST(request: NextRequest) {
           raw_content: payload.raw_content ?? null,
           summary: payload.summary ?? null,
           generated_at: payload.generated_at ?? null,
+          coaching_insight: payload.coaching_insight ?? null,
+          performance_score: payload.performance_score ?? null,
           ingested_at: new Date().toISOString(),
         })
         .select("id")

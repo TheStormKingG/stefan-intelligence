@@ -12,6 +12,8 @@ export interface Report {
   summary: string | null;
   generated_at: string | null;
   ingested_at: string;
+  coaching_insight: string | null;
+  performance_score: number | null;
   created_at: string;
 }
 
@@ -128,6 +130,8 @@ export interface IngestPayload {
   raw_content?: string;
   summary?: string;
   generated_at?: string;
+  coaching_insight?: string;
+  performance_score?: number;
   risks: Omit<Risk, "id" | "report_id" | "created_at">[];
   tasks: (Omit<Task, "id" | "report_id" | "completed" | "completed_at" | "verification_status" | "created_at"> & {
     completed?: boolean;

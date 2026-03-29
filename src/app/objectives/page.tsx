@@ -8,25 +8,34 @@ import { TargetIcon } from "lucide-react";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+function dedupeByTitle(rows: Objective[]): Objective[] {
+  const map = new Map<string, Objective>();
+  const sorted = [...rows].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  for (const row of sorted) {
+    if (!map.has(row.title)) {
+      map.set(row.title, row);
+    }
+  }
+  return Array.from(map.values());
+}
+
 async function getObjectives(): Promise<Objective[]> {
   const supabase = createServerClient();
 
-  const { data: report } = await supabase
-    .from("reports")
-    .select("id")
-    .order("report_date", { ascending: false })
-    .limit(1)
-    .single();
-
-  if (!report) return [];
+  const ninetyDaysAgo = new Date(
+    Date.now() - 90 * 24 * 60 * 60 * 1000
+  ).toISOString();
 
   const { data: objectives } = await supabase
     .from("objectives")
     .select("*")
-    .eq("report_id", report.id)
-    .order("created_at");
+    .neq("status", "completed")
+    .gte("created_at", ninetyDaysAgo)
+    .order("created_at", { ascending: false });
 
-  return objectives ?? [];
+  return dedupeByTitle((objectives ?? []) as Objective[]);
 }
 
 export default async function ObjectivesPage() {

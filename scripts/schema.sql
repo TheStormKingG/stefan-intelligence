@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS reports (
   summary TEXT,
   generated_at TIMESTAMPTZ,
   ingested_at TIMESTAMPTZ DEFAULT now(),
+  coaching_insight TEXT,
+  performance_score DECIMAL(4,2),
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

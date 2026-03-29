@@ -5,25 +5,33 @@ import { TasksPageClient } from "./TasksPageClient";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+function dedupeByTitle(rows: Task[]): Task[] {
+  const map = new Map<string, Task>();
+  const sorted = [...rows].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  for (const row of sorted) {
+    if (!map.has(row.title)) {
+      map.set(row.title, row);
+    }
+  }
+  return Array.from(map.values());
+}
+
 async function getAllTasks(): Promise<Task[]> {
   const supabase = createServerClient();
 
-  const { data: report } = await supabase
-    .from("reports")
-    .select("id")
-    .order("report_date", { ascending: false })
-    .limit(1)
-    .single();
-
-  if (!report) return [];
+  const thirtyDaysAgo = new Date(
+    Date.now() - 30 * 24 * 60 * 60 * 1000
+  ).toISOString();
 
   const { data: tasks } = await supabase
     .from("tasks")
     .select("*")
-    .eq("report_id", report.id)
-    .order("created_at");
+    .gte("created_at", thirtyDaysAgo)
+    .order("created_at", { ascending: false });
 
-  return tasks ?? [];
+  return dedupeByTitle((tasks ?? []) as Task[]);
 }
 
 export default async function TasksPage() {

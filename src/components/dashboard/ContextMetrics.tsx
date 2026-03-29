@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/system/EmptyState";
 
 interface ContextMetricsProps {
   metrics: Metric[];
+  note?: string | null;
 }
 
 const METRIC_ACCENTS = [
@@ -16,7 +17,7 @@ const METRIC_ACCENTS = [
   "linear-gradient(135deg, #EAB930, #DAA920)",
 ];
 
-export function ContextMetrics({ metrics }: ContextMetricsProps) {
+export function ContextMetrics({ metrics, note }: ContextMetricsProps) {
   if (metrics.length === 0) {
     return (
       <section className="mb-8">
@@ -31,6 +32,9 @@ export function ContextMetrics({ metrics }: ContextMetricsProps) {
 
   return (
     <section className="mb-8">
+      {note && (
+        <p className="text-caption text-tertiary mb-2 px-1">{note}</p>
+      )}
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
         {metrics.map((metric, i) => (
           <MetricPill key={metric.id} metric={metric} index={i} accent={METRIC_ACCENTS[i % METRIC_ACCENTS.length]} />

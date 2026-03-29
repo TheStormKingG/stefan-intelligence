@@ -1,72 +1,140 @@
 import { createServerClient } from "@/lib/supabase";
-import { ReportWithChildren } from "@/lib/types";
+import { Report, Risk, Task, Objective, Metric } from "@/lib/types";
 import { Header } from "@/components/layout/Header";
 import { Banner } from "@/components/system/Banner";
 import { CriticalZone } from "@/components/dashboard/CriticalZone";
 import { ExecutionZone } from "@/components/dashboard/ExecutionZone";
 import { StrategicZone } from "@/components/dashboard/StrategicZone";
 import { ContextMetrics } from "@/components/dashboard/ContextMetrics";
+import { CoachingCard } from "@/components/dashboard/CoachingCard";
 import { EmptyState } from "@/components/system/EmptyState";
 import { FileTextIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-async function getLatestReport(): Promise<ReportWithChildren | null> {
+function dedupeByTitle<T extends { title: string; created_at: string }>(
+  rows: T[]
+): T[] {
+  const map = new Map<string, T>();
+  const sorted = [...rows].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  for (const row of sorted) {
+    if (!map.has(row.title)) {
+      map.set(row.title, row);
+    }
+  }
+  return Array.from(map.values());
+}
+
+interface DashboardData {
+  latestReport: Report | null;
+  tasks: Task[];
+  risks: Risk[];
+  objectives: Objective[];
+  metrics: Metric[];
+  metricsReportDate: string | null;
+}
+
+async function getDashboardData(): Promise<DashboardData> {
   const supabase = createServerClient();
 
-  const { data: report } = await supabase
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: latestReport } = await supabase
     .from("reports")
     .select("*")
     .order("report_date", { ascending: false })
     .limit(1)
     .single();
 
-  if (!report) return null;
-
-  const [risks, tasks, objectives, metrics] = await Promise.all([
-    supabase
-      .from("risks")
-      .select("*")
-      .eq("report_id", report.id)
-      .order("created_at"),
+  const [tasksRes, risksRes, objectivesRes] = await Promise.all([
     supabase
       .from("tasks")
       .select("*")
-      .eq("report_id", report.id)
-      .order("created_at"),
+      .eq("completed", false)
+      .gte("created_at", thirtyDaysAgo)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("risks")
+      .select("*")
+      .gte("created_at", thirtyDaysAgo)
+      .order("created_at", { ascending: false }),
     supabase
       .from("objectives")
       .select("*")
-      .eq("report_id", report.id)
-      .order("created_at"),
-    supabase
-      .from("metrics")
-      .select("*")
-      .eq("report_id", report.id)
-      .order("created_at"),
+      .neq("status", "completed")
+      .gte("created_at", ninetyDaysAgo)
+      .order("created_at", { ascending: false }),
   ]);
 
+  const tasks = dedupeByTitle((tasksRes.data ?? []) as Task[]);
+  const risks = dedupeByTitle((risksRes.data ?? []) as Risk[]);
+  const objectives = dedupeByTitle((objectivesRes.data ?? []) as Objective[]);
+
+  let metrics: Metric[] = [];
+  let metricsReportDate: string | null = null;
+
+  if (latestReport) {
+    const { data: latestMetrics } = await supabase
+      .from("metrics")
+      .select("*")
+      .eq("report_id", latestReport.id)
+      .order("created_at");
+
+    if (latestMetrics && latestMetrics.length > 0) {
+      metrics = latestMetrics as Metric[];
+      metricsReportDate = latestReport.report_date;
+    }
+  }
+
+  if (metrics.length === 0) {
+    const { data: reportsWithMetrics } = await supabase
+      .from("reports")
+      .select("id, report_date")
+      .order("report_date", { ascending: false })
+      .limit(10);
+
+    for (const rpt of reportsWithMetrics ?? []) {
+      const { data: rptMetrics } = await supabase
+        .from("metrics")
+        .select("*")
+        .eq("report_id", rpt.id)
+        .order("created_at");
+
+      if (rptMetrics && rptMetrics.length > 0) {
+        metrics = rptMetrics as Metric[];
+        metricsReportDate = rpt.report_date;
+        break;
+      }
+    }
+  }
+
   return {
-    ...report,
-    risks: risks.data ?? [],
-    tasks: tasks.data ?? [],
-    objectives: objectives.data ?? [],
-    metrics: metrics.data ?? [],
+    latestReport: latestReport as Report | null,
+    tasks,
+    risks,
+    objectives,
+    metrics,
+    metricsReportDate,
   };
 }
 
 export default async function DashboardPage() {
-  const report = await getLatestReport();
+  const { latestReport, tasks, risks, objectives, metrics, metricsReportDate } =
+    await getDashboardData();
 
   const now = new Date();
   const today = now.toISOString().split("T")[0];
-  const isStale = report && report.report_date !== today;
+  const isStale = latestReport && latestReport.report_date !== today;
 
   let staleHours = 0;
-  if (report?.ingested_at) {
+  if (latestReport?.ingested_at) {
     staleHours = Math.round(
-      (now.getTime() - new Date(report.ingested_at).getTime()) / (1000 * 60 * 60)
+      (now.getTime() - new Date(latestReport.ingested_at).getTime()) / (1000 * 60 * 60)
     );
   }
   const isCriticallyStale = staleHours > 36;
@@ -78,11 +146,21 @@ export default async function DashboardPage() {
         ? `${staleHours} hour${staleHours === 1 ? "" : "s"} ago`
         : `${Math.round(staleHours / 24)} day${Math.round(staleHours / 24) === 1 ? "" : "s"} ago`;
 
+  const hasAnyData = latestReport || tasks.length > 0 || risks.length > 0 || objectives.length > 0;
+
+  const metricsNote =
+    metricsReportDate && metricsReportDate !== today
+      ? `Metrics from ${new Date(metricsReportDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+      : null;
+
   return (
     <div className="page-container">
-      <Header ingestionTime={report?.ingested_at} />
+      <Header
+        ingestionTime={latestReport?.ingested_at}
+        performanceScore={latestReport?.performance_score ?? null}
+      />
 
-      {!report && (
+      {!hasAnyData && (
         <EmptyState
           title="No intelligence available"
           description="Waiting for first report ingestion from Cowork AI"
@@ -90,7 +168,7 @@ export default async function DashboardPage() {
         />
       )}
 
-      {report && isStale && (
+      {latestReport && isStale && (
         <Banner
           message={`Last updated ${staleAge}`}
           detail={
@@ -102,12 +180,15 @@ export default async function DashboardPage() {
         />
       )}
 
-      {report && (
+      {hasAnyData && (
         <>
-          <CriticalZone risks={report.risks} />
-          <ExecutionZone tasks={report.tasks} />
-          <StrategicZone objectives={report.objectives} />
-          <ContextMetrics metrics={report.metrics} />
+          {latestReport?.coaching_insight && (
+            <CoachingCard insight={latestReport.coaching_insight} />
+          )}
+          <CriticalZone risks={risks} />
+          <ExecutionZone tasks={tasks} />
+          <StrategicZone objectives={objectives} />
+          <ContextMetrics metrics={metrics} note={metricsNote} />
         </>
       )}
     </div>

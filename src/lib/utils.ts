@@ -46,11 +46,20 @@ export function getTasksForTimeframe(
   tasks: Task[],
   days: number
 ): Task[] {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() + days);
-  return tasks.filter(
-    (t) => !t.due_date || new Date(t.due_date) <= cutoff
-  );
+  const futureCutoff = new Date();
+  futureCutoff.setDate(futureCutoff.getDate() + days);
+  const pastCutoff = new Date();
+  pastCutoff.setDate(pastCutoff.getDate() - days);
+
+  return tasks.filter((t) => {
+    const dueDate = t.due_date ? new Date(t.due_date + "T23:59:59") : null;
+    const createdDate = new Date(t.created_at);
+
+    if (dueDate && dueDate <= futureCutoff) return true;
+    if (!dueDate && createdDate >= pastCutoff) return true;
+
+    return false;
+  });
 }
 
 export function isOverdue(dateStr: string | null): boolean {
