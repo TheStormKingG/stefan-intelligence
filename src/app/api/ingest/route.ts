@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { IngestPayload } from "@/lib/types";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
@@ -10,7 +20,7 @@ export async function POST(request: NextRequest) {
   if (!token || !expected || token !== expected) {
     return NextResponse.json(
       { error: "Unauthorized" },
-      { status: 401 }
+      { status: 401, headers: CORS_HEADERS }
     );
   }
 
@@ -20,14 +30,14 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON body" },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     );
   }
 
   if (!payload.report_date) {
     return NextResponse.json(
       { error: "report_date is required" },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     );
   }
 
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
       !Array.isArray(payload.objectives) || !Array.isArray(payload.metrics)) {
     return NextResponse.json(
       { error: "risks, tasks, objectives, and metrics must be arrays" },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     );
   }
 
@@ -146,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { success: true, report_id: reportId },
-      { status: 200 }
+      { status: 200, headers: CORS_HEADERS }
     );
   } catch (error) {
     const payloadSummary = {
@@ -168,7 +178,7 @@ export async function POST(request: NextRequest) {
     const description = error instanceof Error ? error.message : "Unknown database error during ingestion";
     return NextResponse.json(
       { success: false, error: description, report_date: payload.report_date },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

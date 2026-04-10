@@ -17,9 +17,15 @@ function dedupeByTitle<T extends { title: string; created_at: string }>(
   rows: T[]
 ): T[] {
   const map = new Map<string, T>();
-  const sorted = [...rows].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  // Sort: completed tasks first, then newest first within same completion status.
+  // This ensures a user-completed task is never overridden by a newer
+  // incomplete version re-sent by Cowork in the next nightly run.
+  const sorted = [...rows].sort((a, b) => {
+    const aCompleted = "completed" in a && (a as { completed: boolean }).completed;
+    const bCompleted = "completed" in b && (b as { completed: boolean }).completed;
+    if (aCompleted !== bCompleted) return aCompleted ? -1 : 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   for (const row of sorted) {
     if (!map.has(row.title)) {
       map.set(row.title, row);
@@ -52,10 +58,13 @@ async function getDashboardData(): Promise<DashboardData> {
     .single();
 
   const [tasksRes, risksRes, objectivesRes] = await Promise.all([
+    // Fetch ALL tasks (complete + incomplete) before dedup.
+    // Dedup prefers completed=true rows, then we filter them out.
+    // This prevents completed tasks from reappearing when Cowork
+    // re-sends them as incomplete in the next nightly run.
     supabase
       .from("tasks")
       .select("*")
-      .eq("completed", false)
       .gte("created_at", thirtyDaysAgo)
       .order("created_at", { ascending: false }),
     supabase
@@ -71,7 +80,8 @@ async function getDashboardData(): Promise<DashboardData> {
       .order("created_at", { ascending: false }),
   ]);
 
-  const tasks = dedupeByTitle((tasksRes.data ?? []) as Task[]);
+  const allTasks = dedupeByTitle((tasksRes.data ?? []) as Task[]);
+  const tasks = allTasks.filter((t) => !t.completed);
   const risks = dedupeByTitle((risksRes.data ?? []) as Risk[]);
   const objectives = dedupeByTitle((objectivesRes.data ?? []) as Objective[]);
 
@@ -137,7 +147,7 @@ export default async function DashboardPage() {
       (now.getTime() - new Date(latestReport.ingested_at).getTime()) / (1000 * 60 * 60)
     );
   }
-  const isCriticallyStale = staleHours > 36;
+  const isCriticallyStale = staleHours > 48;
 
   const staleAge =
     staleHours < 1
@@ -173,8 +183,8 @@ export default async function DashboardPage() {
           message={`Last updated ${staleAge}`}
           detail={
             isCriticallyStale
-              ? "The nightly intelligence run may have failed. Check your email for an error report."
-              : undefined
+              ? "Nightly run appears to have failed. Open Cowork and trigger the Daily Intelligence Report manually to refresh."
+              : "Intelligence data may be incomplete. A fresh run is expected tonight."
           }
           variant={isCriticallyStale ? "critical" : "warning"}
         />

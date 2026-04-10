@@ -1,4 +1,5 @@
-import { getGreeting, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { ClientGreeting } from "./ClientGreeting";
 
 interface HeaderProps {
   name?: string;
@@ -14,9 +15,7 @@ function getScoreColor(score: number): string {
 }
 
 export function Header({ name = "Stefan", ingestionTime, performanceScore }: HeaderProps) {
-  const greeting = getGreeting();
   const today = formatDate(new Date().toISOString());
-
   const score = performanceScore != null ? Number(performanceScore) : null;
 
   return (
@@ -26,7 +25,7 @@ export function Header({ name = "Stefan", ingestionTime, performanceScore }: Hea
       </p>
       <div className="flex items-center gap-3">
         <h1 className="text-title-lg text-foreground tracking-tight">
-          {greeting}, {name}
+          <ClientGreeting name={name} />
         </h1>
         {score != null && (
           <span

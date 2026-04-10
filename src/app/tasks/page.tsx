@@ -7,9 +7,11 @@ export const fetchCache = "force-no-store";
 
 function dedupeByTitle(rows: Task[]): Task[] {
   const map = new Map<string, Task>();
-  const sorted = [...rows].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  // Prefer completed tasks over newer incomplete ones with the same title.
+  const sorted = [...rows].sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? -1 : 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   for (const row of sorted) {
     if (!map.has(row.title)) {
       map.set(row.title, row);
