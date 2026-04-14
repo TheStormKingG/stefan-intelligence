@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useReducer, useCallback } from "react";
-import { Clock, CheckCircle2, AlertCircle, Coffee, Sun } from "lucide-react";
-import type { DailyTask, TaskSuggestion, EvidenceItem } from "@/lib/types";
+import { Clock, CheckCircle2, AlertCircle, Coffee, Sun, Sparkles, ChevronDown } from "lucide-react";
+import type { DailyTask, TaskSuggestion, EvidenceItem, PriorityImpact, Difficulty } from "@/lib/types";
 import {
   isInIntakeWindow,
   getCurrentBlock,
@@ -293,6 +293,22 @@ export default function DailyWorkPage() {
               ))}
             </div>
           )}
+
+          {/* Suggested Tasks section */}
+          {phase !== "loading" && suggestions.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2 px-1">
+                <Sparkles size={14} className="text-amber-400" />
+                <h2 className="text-sm font-semibold text-white/70 uppercase tracking-widest">
+                  Suggested Tasks
+                </h2>
+                <span className="text-[10px] text-white/30 ml-auto">{suggestions.length} tasks</span>
+              </div>
+              {suggestions.map((s) => (
+                <SuggestionCard key={s.id} suggestion={s} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -348,6 +364,59 @@ function TaskStatusCard({ task }: { task: DailyTask }) {
           Block {task.task_number} · {cfg.label}
         </p>
       </div>
+    </div>
+  );
+}
+
+const PRIORITY_BADGE: Record<PriorityImpact, string> = {
+  High: "bg-red-500/15 text-red-400 border-red-500/30",
+  Moderate: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  Low: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+};
+
+const DIFFICULTY_BADGE: Record<Difficulty, string> = {
+  Hard: "bg-red-500/15 text-red-400 border-red-500/30",
+  Medium: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  Easy: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+};
+
+function SuggestionCard({ suggestion }: { suggestion: TaskSuggestion }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="rounded-xl bg-white/[0.03] border border-white/5 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full text-left px-4 py-3 flex items-start gap-3"
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-white leading-snug">{suggestion.task_name}</p>
+          <p className="text-xs text-white/40 mt-1 line-clamp-2">{suggestion.description}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${PRIORITY_BADGE[suggestion.priority_impact]}`}>
+              {suggestion.priority_impact}
+            </span>
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${DIFFICULTY_BADGE[suggestion.difficulty]}`}>
+              {suggestion.difficulty}
+            </span>
+            <span className="text-[10px] text-white/25 ml-1">#{suggestion.rank}</span>
+          </div>
+        </div>
+        <ChevronDown
+          size={14}
+          className={`text-white/30 mt-1 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {expanded && suggestion.execution_tips && (
+        <div className="px-4 pb-3 pt-0">
+          <div className="px-3 py-2 rounded-lg bg-white/[0.03] border border-white/5">
+            <p className="text-[10px] uppercase tracking-widest text-white/30 mb-1">Execution Tips</p>
+            <p className="text-xs text-white/50 leading-relaxed">{suggestion.execution_tips}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

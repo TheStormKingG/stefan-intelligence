@@ -5,19 +5,15 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboardIcon,
   ClockIcon,
-  CheckSquareIcon,
   TargetIcon,
   WalletIcon,
-  CrownIcon,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboardIcon },
   { href: "/daily-work", label: "Daily", icon: ClockIcon },
-  { href: "/tasks", label: "Tasks", icon: CheckSquareIcon },
-  { href: "/president", label: "President", icon: CrownIcon },
+  { href: "/president", label: "Strategy", icon: TargetIcon },
   { href: "/finances", label: "Finances", icon: WalletIcon },
-  { href: "/objectives", label: "Strategy", icon: TargetIcon },
 ] as const;
 
 export function BottomNav() {
