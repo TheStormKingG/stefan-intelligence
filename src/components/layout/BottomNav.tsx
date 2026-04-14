@@ -4,18 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboardIcon,
+  ClockIcon,
   CheckSquareIcon,
   TargetIcon,
   WalletIcon,
-  ArchiveIcon,
+  CrownIcon,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboardIcon },
+  { href: "/daily-work", label: "Daily", icon: ClockIcon },
   { href: "/tasks", label: "Tasks", icon: CheckSquareIcon },
-  { href: "/objectives", label: "Strategy", icon: TargetIcon },
+  { href: "/president", label: "President", icon: CrownIcon },
   { href: "/finances", label: "Finances", icon: WalletIcon },
-  { href: "/archive", label: "Archive", icon: ArchiveIcon },
+  { href: "/objectives", label: "Strategy", icon: TargetIcon },
 ] as const;
 
 export function BottomNav() {

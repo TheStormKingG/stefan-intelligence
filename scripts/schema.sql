@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS reports (
   ingested_at TIMESTAMPTZ DEFAULT now(),
   coaching_insight TEXT,
   performance_score DECIMAL(4,2),
+  whatsapp_insights TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -121,3 +122,54 @@ CREATE POLICY "Allow all access to objectives" ON objectives FOR ALL USING (true
 CREATE POLICY "Allow all access to metrics" ON metrics FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to financial_entries" ON financial_entries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to balance_snapshots" ON balance_snapshots FOR ALL USING (true) WITH CHECK (true);
+
+-- Daily Work Tab tables
+
+CREATE TABLE IF NOT EXISTS eis_task_suggestions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date          DATE NOT NULL,
+  task_name     TEXT NOT NULL,
+  description   TEXT NOT NULL,
+  priority_impact TEXT CHECK (priority_impact IN ('High','Moderate','Low')),
+  difficulty    TEXT CHECK (difficulty IN ('Hard','Medium','Easy')),
+  execution_tips TEXT,
+  rank          INTEGER,
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_suggestions_date ON eis_task_suggestions(date DESC);
+CREATE INDEX IF NOT EXISTS idx_suggestions_rank ON eis_task_suggestions(date, rank);
+
+CREATE TABLE IF NOT EXISTS daily_tasks (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date          DATE NOT NULL,
+  task_number   INTEGER CHECK (task_number IN (1,2)),
+  task_name     TEXT NOT NULL,
+  task_description TEXT,
+  assigned_block INTEGER,
+  status        TEXT DEFAULT 'pending',
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_tasks_date ON daily_tasks(date DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_tasks_status ON daily_tasks(status);
+
+CREATE TABLE IF NOT EXISTS task_completions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  daily_task_id UUID REFERENCES daily_tasks(id),
+  completed_at  TIMESTAMPTZ,
+  notes         TEXT,
+  evidence_items JSONB,
+  overflow_state TEXT,
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_completions_task ON task_completions(daily_task_id);
+
+ALTER TABLE eis_task_suggestions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_completions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all access to eis_task_suggestions" ON eis_task_suggestions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all access to daily_tasks" ON daily_tasks FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all access to task_completions" ON task_completions FOR ALL USING (true) WITH CHECK (true);

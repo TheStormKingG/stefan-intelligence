@@ -44,6 +44,11 @@ export function ContextMetrics({ metrics, note }: ContextMetricsProps) {
   );
 }
 
+function formatTimestamp(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 function MetricPill({ metric, index, accent }: { metric: Metric; index: number; accent: string }) {
   const DirectionIcon =
     metric.change_direction === "up"
@@ -72,6 +77,11 @@ function MetricPill({ metric, index, accent }: { metric: Metric; index: number; 
       <p className="text-title-sm text-foreground tabular-nums pl-2">
         {formatMetricValue(metric.value, metric.unit)}
       </p>
+      {metric.created_at && (
+        <p className="text-[10px] text-tertiary mt-1 pl-2 opacity-60">
+          {formatTimestamp(metric.created_at)}
+        </p>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { ExecutionZone } from "@/components/dashboard/ExecutionZone";
 import { StrategicZone } from "@/components/dashboard/StrategicZone";
 import { ContextMetrics } from "@/components/dashboard/ContextMetrics";
 import { CoachingCard } from "@/components/dashboard/CoachingCard";
+import { WhatsAppInsights } from "@/components/dashboard/WhatsAppInsights";
 import { EmptyState } from "@/components/system/EmptyState";
 import { FileTextIcon } from "lucide-react";
 
@@ -41,6 +42,7 @@ interface DashboardData {
   objectives: Objective[];
   metrics: Metric[];
   metricsReportDate: string | null;
+  whatsappInsights: string | null;
 }
 
 async function getDashboardData(): Promise<DashboardData> {
@@ -123,6 +125,11 @@ async function getDashboardData(): Promise<DashboardData> {
     }
   }
 
+  const whatsappInsights =
+    (latestReport as Report | null)?.whatsapp_insights ??
+    (latestReport as Report | null)?.raw_content ??
+    null;
+
   return {
     latestReport: latestReport as Report | null,
     tasks,
@@ -130,11 +137,12 @@ async function getDashboardData(): Promise<DashboardData> {
     objectives,
     metrics,
     metricsReportDate,
+    whatsappInsights,
   };
 }
 
 export default async function DashboardPage() {
-  const { latestReport, tasks, risks, objectives, metrics, metricsReportDate } =
+  const { latestReport, tasks, risks, objectives, metrics, metricsReportDate, whatsappInsights } =
     await getDashboardData();
 
   const now = new Date();
@@ -199,6 +207,9 @@ export default async function DashboardPage() {
           <ExecutionZone tasks={tasks} />
           <StrategicZone objectives={objectives} />
           <ContextMetrics metrics={metrics} note={metricsNote} />
+          {whatsappInsights && (
+            <WhatsAppInsights insights={whatsappInsights} />
+          )}
         </>
       )}
     </div>
