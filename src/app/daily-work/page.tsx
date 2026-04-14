@@ -6,7 +6,6 @@ import type { DailyTask, TaskSuggestion, EvidenceItem } from "@/lib/types";
 import {
   isInIntakeWindow,
   getCurrentBlock,
-  BLOCK_DURATION_MIN,
 } from "@/lib/constants/time-blocks";
 import {
   fetchTodaySuggestions,
@@ -127,7 +126,7 @@ export default function DailyWorkPage() {
     }
 
     // Extension or borrow: update state machine, add time, handle TB2 borrow side-effects
-    const addedMin = getAddedMinutesForAction(action);
+    getAddedMinutesForAction(action);
     dispatchOverflow(action);
 
     if (

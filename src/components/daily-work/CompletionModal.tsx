@@ -8,7 +8,7 @@ import type { CompletionOption, OverflowAction } from "@/lib/overflow-state-mach
 interface CompletionModalProps {
   trigger: "user_completed" | "timer_expired";
   options: CompletionOption[];
-  overflowState: OverflowState | null;
+  overflowState?: OverflowState | null;
   onAction: (action: OverflowAction) => void;
   onSubmitEvidence: (data: { notes: string; evidence_items: EvidenceItem[] }) => Promise<void>;
   onUploadFile: (file: File) => Promise<string>;
@@ -35,7 +35,6 @@ interface EvidenceRow {
 export function CompletionModal({
   trigger,
   options,
-  overflowState,
   onAction,
   onSubmitEvidence,
   onUploadFile,
@@ -78,10 +77,6 @@ export function CompletionModal({
 
   function removeRow(id: string) {
     setRows((prev) => prev.filter((r) => r.id !== id));
-  }
-
-  function setRowUploading(id: string, uploading: boolean) {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, uploading } : r)));
   }
 
   async function handleFileUpload(type: "photo" | "screenshot", files: FileList | null) {

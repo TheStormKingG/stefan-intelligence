@@ -1,6 +1,5 @@
 import { createServerClient } from "@/lib/supabase";
 import { Report, Objective, Metric } from "@/lib/types";
-import { Header } from "@/components/layout/Header";
 import { DailyGainTracker } from "@/components/president/DailyGainTracker";
 import { StrategicTimeline } from "@/components/president/StrategicTimeline";
 import { NetworkMap } from "@/components/president/NetworkMap";

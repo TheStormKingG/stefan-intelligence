@@ -2,7 +2,7 @@
 
 import { Metric } from "@/lib/types";
 import { formatMetricValue } from "@/lib/utils";
-import { TrendingUpIcon, ZapIcon } from "lucide-react";
+import { ZapIcon } from "lucide-react";
 import { SectionContainer } from "@/components/system/SectionContainer";
 
 interface ScoreEntry {
