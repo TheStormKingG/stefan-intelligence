@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS reports (
   coaching_insight TEXT,
   performance_score DECIMAL(4,2),
   whatsapp_insights TEXT,
+  run_number INTEGER,
+  calendar_events JSONB,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

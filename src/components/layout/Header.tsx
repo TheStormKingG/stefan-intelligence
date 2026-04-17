@@ -5,6 +5,8 @@ interface HeaderProps {
   name?: string;
   ingestionTime?: string | null;
   performanceScore?: number | null;
+  reportDate?: string | null;
+  runNumber?: number | null;
 }
 
 function getScoreColor(score: number): string {
@@ -14,9 +16,13 @@ function getScoreColor(score: number): string {
   return "bg-severity-critical/15 text-severity-critical";
 }
 
-export function Header({ name = "Stefan", ingestionTime, performanceScore }: HeaderProps) {
+export function Header({ name = "Stefan", ingestionTime, performanceScore, reportDate, runNumber }: HeaderProps) {
   const today = formatDate(new Date().toISOString());
   const score = performanceScore != null ? Number(performanceScore) : null;
+
+  const formattedReportDate = reportDate
+    ? new Date(reportDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : null;
 
   return (
     <header className="mb-8 animate-fade-in">
@@ -43,6 +49,12 @@ export function Header({ name = "Stefan", ingestionTime, performanceScore }: Hea
             hour: "2-digit",
             minute: "2-digit",
           })}
+          {(formattedReportDate || runNumber != null) && (
+            <span className="ml-2 text-tertiary">
+              · Report: {formattedReportDate ?? "—"}
+              {runNumber != null && ` | Run #${runNumber}`}
+            </span>
+          )}
         </p>
       )}
     </header>

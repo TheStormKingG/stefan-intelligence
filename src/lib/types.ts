@@ -5,6 +5,17 @@ export type ObjectiveStatus = "on_track" | "at_risk" | "behind" | "completed";
 export type ChangeDirection = "up" | "down" | "stable";
 export type VerificationStatus = "pending_verification" | "verified" | "failed_verification" | "not_applicable";
 
+/** Optional calendar snapshot when Google Calendar MCP fails; stored on the report row. */
+export type CalendarEventsPayload = CalendarEventSnapshot[] | null;
+
+export interface CalendarEventSnapshot {
+  title: string;
+  start?: string;
+  end?: string;
+  location?: string;
+  all_day?: boolean;
+}
+
 export interface Report {
   id: string;
   report_date: string;
@@ -15,6 +26,9 @@ export interface Report {
   coaching_insight: string | null;
   performance_score: number | null;
   whatsapp_insights: string | null;
+  run_number: number | null;
+  /** Present after migrate-v24-patches.sql; may be absent on older rows. */
+  calendar_events?: CalendarEventsPayload;
   created_at: string;
 }
 
@@ -228,6 +242,11 @@ export interface UnifiedIngestPayload {
 
   financial_entries?: Omit<FinancialEntry, "id" | "report_id" | "created_at">[];
   balance_snapshots?: Omit<BalanceSnapshot, "id" | "created_at">[];
+
+  /** Daily Work suggestions — DELETE+INSERT for report `date` when key is present. Omit key to leave `eis_task_suggestions` unchanged. */
+  task_suggestions?: Omit<TaskSuggestion, "id" | "date" | "created_at">[];
+  /** When Google Calendar MCP fails; stored on the report row for dashboard display. */
+  calendar_events?: CalendarEventSnapshot[] | null;
 }
 
 /** @deprecated Use UnifiedIngestPayload — kept for backwards compat */

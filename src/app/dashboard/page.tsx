@@ -1,5 +1,12 @@
 import { createServerClient } from "@/lib/supabase";
-import { Report, Risk, Task, Objective, Metric } from "@/lib/types";
+import {
+  Report,
+  Risk,
+  Task,
+  Objective,
+  Metric,
+  type CalendarEventSnapshot,
+} from "@/lib/types";
 import { Header } from "@/components/layout/Header";
 import { Banner } from "@/components/system/Banner";
 import { CriticalZone } from "@/components/dashboard/CriticalZone";
@@ -8,8 +15,21 @@ import { StrategicZone } from "@/components/dashboard/StrategicZone";
 import { ContextMetrics } from "@/components/dashboard/ContextMetrics";
 import { CoachingCard } from "@/components/dashboard/CoachingCard";
 import { WhatsAppInsights } from "@/components/dashboard/WhatsAppInsights";
+import { ScoreSparkline } from "@/components/dashboard/ScoreSparkline";
+import { CalendarCard } from "@/components/dashboard/CalendarCard";
 import { EmptyState } from "@/components/system/EmptyState";
 import { FileTextIcon } from "lucide-react";
+
+function parseCalendarEvents(raw: unknown): CalendarEventSnapshot[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (e): e is CalendarEventSnapshot =>
+      e !== null &&
+      typeof e === "object" &&
+      "title" in e &&
+      typeof (e as CalendarEventSnapshot).title === "string"
+  );
+}
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -43,6 +63,8 @@ interface DashboardData {
   metrics: Metric[];
   metricsReportDate: string | null;
   whatsappInsights: string | null;
+  scoreSeries: { date: string; score: number }[];
+  calendarEvents: CalendarEventSnapshot[];
 }
 
 async function getDashboardData(): Promise<DashboardData> {
@@ -59,7 +81,7 @@ async function getDashboardData(): Promise<DashboardData> {
     .limit(1)
     .single();
 
-  const [tasksRes, risksRes, objectivesRes] = await Promise.all([
+  const [tasksRes, risksRes, objectivesRes, scoreReportsRes] = await Promise.all([
     // Fetch ALL tasks (complete + incomplete) before dedup.
     // Dedup prefers completed=true rows, then we filter them out.
     // This prevents completed tasks from reappearing when Cowork
@@ -69,17 +91,25 @@ async function getDashboardData(): Promise<DashboardData> {
       .select("*")
       .gte("created_at", thirtyDaysAgo)
       .order("created_at", { ascending: false }),
-    supabase
-      .from("risks")
-      .select("*")
-      .gte("created_at", thirtyDaysAgo)
-      .order("created_at", { ascending: false }),
+    latestReport
+      ? supabase
+          .from("risks")
+          .select("*")
+          .eq("report_id", latestReport.id)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] as Risk[] | null, error: null }),
     supabase
       .from("objectives")
       .select("*")
       .neq("status", "completed")
       .gte("created_at", ninetyDaysAgo)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("reports")
+      .select("report_date, performance_score")
+      .not("performance_score", "is", null)
+      .order("report_date", { ascending: true })
+      .limit(60),
   ]);
 
   const allTasks = dedupeByTitle((tasksRes.data ?? []) as Task[]);
@@ -130,6 +160,16 @@ async function getDashboardData(): Promise<DashboardData> {
     (latestReport as Report | null)?.raw_content ??
     null;
 
+  const scoreRows = (scoreReportsRes.data ?? [])
+    .filter((r) => r.performance_score != null)
+    .map((r) => ({
+      date: r.report_date,
+      score: Number(r.performance_score),
+    }));
+  const scoreSeries = scoreRows.slice(-14);
+
+  const calendarEvents = parseCalendarEvents(latestReport?.calendar_events);
+
   return {
     latestReport: latestReport as Report | null,
     tasks,
@@ -138,12 +178,23 @@ async function getDashboardData(): Promise<DashboardData> {
     metrics,
     metricsReportDate,
     whatsappInsights,
+    scoreSeries,
+    calendarEvents,
   };
 }
 
 export default async function DashboardPage() {
-  const { latestReport, tasks, risks, objectives, metrics, metricsReportDate, whatsappInsights } =
-    await getDashboardData();
+  const {
+    latestReport,
+    tasks,
+    risks,
+    objectives,
+    metrics,
+    metricsReportDate,
+    whatsappInsights,
+    scoreSeries,
+    calendarEvents,
+  } = await getDashboardData();
 
   const now = new Date();
   const today = now.toISOString().split("T")[0];
@@ -176,7 +227,13 @@ export default async function DashboardPage() {
       <Header
         ingestionTime={latestReport?.ingested_at}
         performanceScore={latestReport?.performance_score ?? null}
+        reportDate={latestReport?.report_date ?? null}
+        runNumber={latestReport?.run_number ?? null}
       />
+
+      {scoreSeries.length >= 2 && <ScoreSparkline scores={scoreSeries} />}
+
+      {calendarEvents.length > 0 && <CalendarCard events={calendarEvents} />}
 
       {!hasAnyData && (
         <EmptyState

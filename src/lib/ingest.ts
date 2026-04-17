@@ -1,5 +1,16 @@
 import { createServerClient } from "@/lib/supabase";
 
+const PRIORITY_IMPACTS = new Set(["High", "Moderate", "Low"]);
+const DIFFICULTIES = new Set(["Hard", "Medium", "Easy"]);
+
+function truncateSuggestionDescription(text: string, max = 300): string {
+  if (text.length <= max) return text;
+  const slice = text.slice(0, 297);
+  const lastSpace = slice.lastIndexOf(" ");
+  const base = lastSpace > 200 ? slice.slice(0, lastSpace) : slice;
+  return `${base}...`;
+}
+
 /**
  * Shared ingestion engine used by both /api/reports and /api/ingest.
  * Accepts ANY reasonable field-name combination so Cowork never 400s
@@ -41,6 +52,12 @@ export async function processIngestion(payload: any): Promise<IngestResult | Ing
   const balanceSnapshots = Array.isArray(payload.balance_snapshots)
     ? payload.balance_snapshots
     : [];
+  const hasTaskSuggestionsKey = Object.prototype.hasOwnProperty.call(payload, "task_suggestions");
+  const taskSuggestionsInput = hasTaskSuggestionsKey
+    ? Array.isArray(payload.task_suggestions)
+      ? payload.task_suggestions
+      : []
+    : null;
 
   const supabase = createServerClient();
 
@@ -53,15 +70,19 @@ export async function processIngestion(payload: any): Promise<IngestResult | Ing
 
     let reportId: string;
 
-    const reportRow = {
+    const reportRow: Record<string, unknown> = {
       raw_content: payload.raw_content ?? payload.whatsapp_insights ?? null,
       summary: payload.summary ?? null,
       generated_at: payload.generated_at ?? null,
       coaching_insight: payload.coaching_insight ?? null,
       performance_score: payload.performance_score ?? null,
       whatsapp_insights: payload.whatsapp_insights ?? null,
+      run_number: payload.run ?? null,
       ingested_at: new Date().toISOString(),
     };
+    if (Object.prototype.hasOwnProperty.call(payload, "calendar_events")) {
+      reportRow.calendar_events = payload.calendar_events ?? null;
+    }
 
     if (existingReport) {
       reportId = existingReport.id;
@@ -172,6 +193,37 @@ export async function processIngestion(payload: any): Promise<IngestResult | Ing
         .from("balance_snapshots")
         .insert(balanceSnapshots);
       if (error) throw error;
+    }
+
+    if (taskSuggestionsInput !== null) {
+      const { error: delSug } = await supabase
+        .from("eis_task_suggestions")
+        .delete()
+        .eq("date", reportDate);
+      if (delSug) throw delSug;
+
+      if (taskSuggestionsInput.length > 0) {
+        const rows = taskSuggestionsInput.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (s: any, index: number) => {
+            const pi = String(s.priority_impact ?? "Moderate");
+            const diff = String(s.difficulty ?? "Medium");
+            return {
+              date: reportDate,
+              task_name: String(s.task_name ?? s.title ?? "Untitled task").slice(0, 200),
+              description: truncateSuggestionDescription(
+                String(s.description ?? "")
+              ),
+              priority_impact: PRIORITY_IMPACTS.has(pi) ? pi : "Moderate",
+              difficulty: DIFFICULTIES.has(diff) ? diff : "Medium",
+              execution_tips: s.execution_tips != null ? String(s.execution_tips) : null,
+              rank: typeof s.rank === "number" ? s.rank : index + 1,
+            };
+          }
+        );
+        const { error: insSug } = await supabase.from("eis_task_suggestions").insert(rows);
+        if (insSug) throw insSug;
+      }
     }
 
     const { count } = await supabase
