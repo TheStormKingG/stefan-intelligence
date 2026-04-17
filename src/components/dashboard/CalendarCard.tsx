@@ -6,13 +6,25 @@ interface CalendarCardProps {
   events: CalendarEventSnapshot[];
 }
 
+function isToday(dateStr: string | undefined): boolean {
+  if (!dateStr) return false;
+  const eventDate = new Date(dateStr);
+  const today = new Date();
+  return (
+    eventDate.getFullYear() === today.getFullYear() &&
+    eventDate.getMonth() === today.getMonth() &&
+    eventDate.getDate() === today.getDate()
+  );
+}
+
 export function CalendarCard({ events }: CalendarCardProps) {
-  if (!events.length) return null;
+  const todayEvents = events.filter(ev => isToday(ev.start ?? ev.end));
+  if (!todayEvents.length) return null;
 
   return (
     <SectionContainer title={"Today's schedule"} subtitle="From intelligence run (calendar fallback)">
       <div className="card p-5 space-y-3">
-        {events.map((ev, i) => (
+        {todayEvents.map((ev, i) => (
           <div key={`${ev.title}-${i}`} className="flex gap-3 items-start">
             <CalendarDaysIcon
               size={18}
