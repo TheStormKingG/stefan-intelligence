@@ -1,5 +1,9 @@
-import { redirect } from "next/navigation";
+import { GlobalStandardsSection } from "@/components/marketing/GlobalStandardsSection";
 
 export default function Home() {
-  redirect("/dashboard");
+  return (
+    <div className="page-container pb-28">
+      <GlobalStandardsSection />
+    </div>
+  );
 }
