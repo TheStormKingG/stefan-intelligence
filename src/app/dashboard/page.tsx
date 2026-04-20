@@ -206,7 +206,7 @@ export default async function DashboardPage() {
       (now.getTime() - new Date(latestReport.ingested_at).getTime()) / (1000 * 60 * 60)
     );
   }
-  const isCriticallyStale = staleHours > 48;
+  const isCriticallyStale = staleHours > 168;
 
   const staleAge =
     staleHours < 1
@@ -248,8 +248,8 @@ export default async function DashboardPage() {
           message={`Last updated ${staleAge}`}
           detail={
             isCriticallyStale
-              ? "Nightly run appears to have failed. Open Cowork and trigger the Daily Intelligence Report manually to refresh."
-              : "Intelligence data may be incomplete. A fresh run is expected tonight."
+              ? "Weekly run appears to have failed. Open Cowork and trigger the Daily Intelligence Report manually to refresh."
+              : "Intelligence data may be incomplete. A fresh run is expected this week."
           }
           variant={isCriticallyStale ? "critical" : "warning"}
         />
